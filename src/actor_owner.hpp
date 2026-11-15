@@ -17,6 +17,8 @@ class InteractionServices;
 enum class OwnerError { none, admission, capacity, native, animation, services, lifetime };
 struct OwnerStatus {
     OwnerError error = OwnerError::none;
+    // Detail may borrow the Owner's first closure-rejection context and remains
+    // stable through later calls; copy it before destroying that Owner.
     const char* detail = "";
     explicit operator bool() const noexcept { return error == OwnerError::none; }
 };

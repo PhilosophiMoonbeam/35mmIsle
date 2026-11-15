@@ -42,7 +42,9 @@ public:
         world::World&, focus::Detector&) const noexcept;
     // Complete native course/family closure, checked before factory allocation/events.
     // path is NULL or a borrowed canonical World path; no Source is fabricated.
-    bool admits_initial_species(const ActorInitialization&, const void* path) noexcept;
+    // Optional failure discriminator has static lifetime; success clears it.
+    bool admits_initial_species(const ActorInitialization&, const void* path,
+        const char** rejection = nullptr) noexcept;
     bool admits_ending(const ActorInitialization&) noexcept;
     // Recheck dynamic liveness/identity against the constructor's immutable
     // closure proof. Does not require current World publication.

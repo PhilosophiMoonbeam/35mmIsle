@@ -23,6 +23,7 @@ struct DetectorBinding {
     focus::RegionCopies& copies;
     focus::Detector& history;
     focus::Photo photo{}; // Explicit membership when prepare_membership is null.
+    // Standalone prepare only; filtered preparation restores Pass::scissor.
     focus::Scissor scissor{0,0,320,240};
     std::uint16_t context = 1;
     bool enabled = false;

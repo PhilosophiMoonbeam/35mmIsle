@@ -57,6 +57,13 @@ Omit `ISLE_SNAP_SOURCE_DIR` to fetch the immutable authoritative commit privatel
 
 Camera APIs own type-3 payloads and up to two matrices. `isle_game_camera_peek_matrix` borrows immutable kind without computing dirty caches; `isle_game_camera_compute_all` publishes matrix/reflection/normalization only after every calculation succeeds. Kind8 uses fixed Y-up and dirties on eye/target/roll, not up-only edits. Model APIs retain translate-only/kind-28 local caches or explicit renderer-contextual poses, independently of model-level placement. Pure preflight precedes mutation; native retirement joins actual work. Fixed words upload directly into word-swapped RDRAM only where a valid local or renderer-owned payload exists. Full scene/photo, actor assets and Windows 11 runtime qualification remain separate.
 
+Native engine consumers disable MSVC identical-COMDAT folding with the transitive
+`/OPT:NOICF` link option. Distinct Original callbacks can have identical compiled
+bodies, but callback-family admission and process cancellation use their native
+function addresses as identity. Keep this option for Release and Debug; dead-code
+elimination (`/OPT:REF`) remains available. See Microsoft's
+[`/OPT` reference](https://learn.microsoft.com/en-us/cpp/build/reference/opt-optimizations).
+
 
 ## Native LLVM RSP backend
 

@@ -353,6 +353,30 @@ void generic_helper_source_process_keeps_native_wait_and_join() {
         "generic Source helper did not execute, wait, self-finish and join independently of Actor payload");
 }
 
+void identical_bodies_keep_distinct_source_process_identity() {
+    ActorControlFixture f{}; isle_rng rng{1}; World world;
+    auto* object = bind(world, f, rng);
+    auto* first = start(world, object, actor_control_identical_a);
+    auto* second = start(world, object, actor_control_identical_b);
+    ok(isle_game_tick(world.game));
+    trace(f, {74, 74});
+    // Observe real retained process pointers rather than a comparison of two
+    // function names that a compiler could constant-fold before the linker.
+    IsleGameSourceCallback first_identity = nullptr, second_identity = nullptr;
+    ok(isle_game_process_source_function(world.game, first, &first_identity));
+    ok(isle_game_process_source_function(world.game, second, &second_identity));
+    require(first_identity != second_identity,
+            "retail linking merged distinct compiled Source callback identities");
+    ok(isle_game_end_source_processes(world.game, object, first_identity));
+    require(actor_control_joined(first) && !actor_control_joined(second) &&
+            counts(world).processes == 1,
+            "ending one Source identity also canceled its identical-body peer");
+    ok(isle_game_tick(world.game));
+    trace(f, {74, 74, 75});
+    require(actor_control_joined(second) && counts(world).processes == 0,
+            "surviving identical-body Source process did not resume and join");
+}
+
 } // namespace
 
 int main() {
@@ -370,6 +394,7 @@ int main() {
         creation_failure_exits_both_c_fences();
         synchronous_wait_failure_does_not_continue();
         generic_helper_source_process_keeps_native_wait_and_join();
+        identical_bodies_keep_distinct_source_process_identity();
         std::cout << "native source actor controls passed\n";
         return 0;
     } catch (const std::exception& error) {

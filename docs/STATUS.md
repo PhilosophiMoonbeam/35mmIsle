@@ -1,14 +1,30 @@
 # Runtime status and qualification boundaries
 
-Current runtime evidence and explicitly bounded historical qualifications.
+Current release status, reported defects and explicitly bounded historical qualifications.
 
 [Project README](../README.md) · [Admission record](development/ADMISSION.md)
 
 ## Runtime status
 
+[Runtime preview 8](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.8)
+pins source `45995a4`; all ten native hosted jobs and its downloaded Linux
+title/menu smoke passed. A Windows user subsequently reported a first-course
+exit at actor callback-closure admission and geometry outside the zoomed lens.
+Inspection of the released Windows executable confirms distinct callback
+identities sharing native addresses. The source corrections preserve those
+addresses with MSVC `/OPT:NOICF` and restore live lens clipping after detector
+copies. Targeted GNU Release checks pass runtime process-identity/cancellation,
+all static Beach species admission, and actual RSP/RDP lens-border pixels across
+four lanes plus zoom-out restoration. Native Windows artifact verification and
+updated executable delivery are separate gates; preview 8 is not silently replaced.
+
+The campaign and fidelity evidence below is historical, not qualification of
+preview 8 or its repaired successor. Windows 11 provisioned acceptance remains
+deferred; the user's observed failure is retained as negative product evidence.
+
 The current fresh-campaign consumer uses actual Host ControlDeck acquisition and an external pixel-only operator; Native entry/retirement, presentation, input ACK and immutable durable-Save evidence flows one way. Its [current Linux checks](development/admission/PUBLIC_CONTROLLER.md#native-public-controldeck-campaign-cutover-and-negative-pilot) exercise visible Boot/Title/New Game/Name, reject early close, independently reach genuine Name/Oak/Save/Title with the acknowledged immutable snapshot retained through owner retirement, and drain a genuinely submitted Camera Check preview on ordinary Host stop without a fault or Entry result. Incomplete campaigns exit nonzero; the separate cancellation diagnostic is not campaign success. **A complete current-build pixel-only campaign and Windows 11 gameplay remain unqualified.** Historical software-controller campaigns below do not establish that newer input-policy gate.
 
-The exact current `5e3ee1c` **installed Linux product** completes a [fresh first-course/Save loop](development/admission/INSTALLED_RUNTIME.md#installed-linux-product-natural-first-course-save-and-normal-exit): ordinary New Game, natural Beach ending, three real photographs, Camera Check, Oak evaluation, Save/keep playing and unforced product exit. A separate [GUI cold continuation](development/admission/INSTALLED_RUNTIME.md#installed-linux-earned-first-course-gui-cold-continuation) independently copies that earned Save, launches a new genuine product process, displays the inherited Pokémon Report **1 kind / 3,300 points before new earning**, responds normally, and exits through ordinary window close. Both components preserve their explicit integrity and retirement boundaries; the earlier metadata collector's false rejection of the legitimate zero-byte lock remains disclosed. This is not an all-seven campaign, complete-profile cold qualification, Windows 11 gameplay, hardware/hearing or release-approval claim.
+The earlier `5e3ee1c` **installed Linux product** completes a [fresh first-course/Save loop](development/admission/INSTALLED_RUNTIME.md#installed-linux-product-natural-first-course-save-and-normal-exit): ordinary New Game, natural Beach ending, three real photographs, Camera Check, Oak evaluation, Save/keep playing and unforced product exit. A separate [GUI cold continuation](development/admission/INSTALLED_RUNTIME.md#installed-linux-earned-first-course-gui-cold-continuation) independently copies that earned Save, launches a new genuine product process, displays the inherited Pokémon Report **1 kind / 3,300 points before new earning**, responds normally, and exits through ordinary window close. Both components preserve their explicit integrity and retirement boundaries; the earlier metadata collector's false rejection of the legitimate zero-byte lock remains disclosed. This is not an all-seven campaign, complete-profile cold qualification, Windows 11 gameplay, hardware/hearing or release-approval claim.
 
 The historical native Linux run at `311155c` recorded a [fresh, unseeded, one-profile campaign](development/admission/HISTORICAL_CAMPAIGNS.md#fresh-unseeded-complete-campaign): all seven courses, naturally earned Apple/Pester/Flute/Dash, six sign Reports, Rainbow/Mew, full Original Credits18, acknowledged Save, visible Title and byte-exact cold profile reopen. That run recorded **124 saved rides, 67 Reports and 141,110 points**, without authored progress, photographs, scores, equipment or profile merging. It does not qualify the current executable or current pixel-only control policy.
 
@@ -18,7 +34,7 @@ That historical proof exercises actual Original Manager results, captured-photo 
 
 The [preceding Runtime preview 6](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.6), source `81f1530`, corrects Report **View** termination while preserving GAME's fixed UI heap. All ten hosted Linux/MSVC jobs pass; the exact downloaded Linux product exercises Bulbasaur/Check/reopen/Charmander/return-to-Oak, normal close and byte-exact whole-pair cold Bulbasaur replay. [Qualification boundaries](development/admission/APPLICATION.md#report-detail-native-backing-and-natural-reopen) remain explicit. Preview 5 stays immutable with its known failure disclosed.
 
-The [current Runtime preview 7](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.7), source `17abf56`, corrects the repeated Album Delete-prompt abort disclosed in preview 6. All ten hosted Linux/MSVC jobs pass. The exact downloaded Linux product exercises repeated prompts, actual **ABA→ABAA** comment editing, slot placement, Save/Title and byte-exact whole-pair cold Pidgey/ABAA reconstruction. [Owner-fence and durability evidence](development/admission/APPLICATION.md#album-repeated-prompt-creator-ownership-and-durable-edits) distinguishes private confirmed-deletion proof from portable-product proof; Windows 11 gameplay and physical devices remain unqualified.
+The [preceding Runtime preview 7](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.7), source `17abf56`, corrects the repeated Album Delete-prompt abort disclosed in preview 6. All ten hosted Linux/MSVC jobs pass. The exact downloaded Linux product exercises repeated prompts, actual **ABA→ABAA** comment editing, slot placement, Save/Title and byte-exact whole-pair cold Pidgey/ABAA reconstruction. [Owner-fence and durability evidence](development/admission/APPLICATION.md#album-repeated-prompt-creator-ownership-and-durable-edits) distinguishes private confirmed-deletion proof from portable-product proof; Windows 11 gameplay and physical devices remain unqualified.
 
 Earlier `be7f372` shared GAME-derived binary32 angles match 10,824 actual public Original returns under observed FP controls, eliminating 28 reproduced score-composition discrepancies. A separate [complete-score comparison](development/admission/PHOTOGRAPHY_ACTORS.md#independent-complete-original-and-native-photo-scoring) matches all 44 score fields, selected slots and flags across four genuine Original/native photographs; a [read-only feedback comparison](development/admission/PHOTOGRAPHY_ACTORS.md#exact-complete-photo-feedback-comparison) also matches all 638,976 packed words, pixel predicates and counts across their eight real native GPU passes. These bounded cohorts are not universal score/pixel, hardware or FP parity. Earlier `4306072` cold Album/AB/Pidgey Replay and `ac87924` keyboard/Oak-scoring/Save proofs remain separately identified cohorts.
 

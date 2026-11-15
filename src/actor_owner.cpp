@@ -24,6 +24,7 @@
 #include <bit>
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <exception>
 #include <limits>
 #include <stdexcept>
@@ -414,6 +415,9 @@ struct Owner::Impl {
     CourseContext course_context;
     bool sound_enabled = true;
     InteractionServices* interactions = nullptr;
+    // Keep the first rejected closure's context stable through later factory
+    // calls and teardown. Returned status text borrows this Owner, not a stack.
+    std::array<char,448> first_closure_failure{};
     IsleBeachEndingServices ending_services{};
     IsleBeachEndingSource ending{};
     // Preserve existing standalone course callers; the original lifecycle
@@ -2470,8 +2474,21 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     if (!common && !magikarp && !ending) {
         const void* path=!written_path || request.spawn->path==world::no_index ?
             nullptr:&self.world.resources().paths[request.spawn->path];
-        if (!self.interactions || !self.interactions->admits_initial_species(initialization,path))
-            return reject(OwnerError::admission,"actor native species requires complete native callback/graph/resource/service closure");
+        const char* reason="interaction-services-unbound";
+        if (!self.interactions || !self.interactions->admits_initial_species(initialization,path,&reason)) {
+            if (!self.first_closure_failure[0])
+                std::snprintf(self.first_closure_failure.data(),self.first_closure_failure.size(),
+                    "actor native species requires complete native callback/graph/resource/service closure "
+                    "[first rejection: course=%d actor=%u requested=%d object=%u factory=0x%08x init=0x%08x "
+                    "block=%zu reference=%zu path=%zu path-written=%u reason=%s]",
+                    static_cast<int>(self.course_context.course_id()),static_cast<unsigned>(definition.actor_id),
+                    static_cast<int>(request.spawn->id),static_cast<unsigned>(request.object_id),
+                    static_cast<unsigned>(definition.factory_identity),static_cast<unsigned>(initialization.wire.guest_address),
+                    static_cast<std::size_t>(request.block->index),static_cast<std::size_t>(request.reference->index),
+                    static_cast<std::size_t>(written_path ? request.spawn->path : world::no_index),
+                    static_cast<unsigned>(written_path),reason);
+            return reject(OwnerError::admission,self.first_closure_failure.data());
+        }
     }
     if (self.logical_count==self.logical.size()) return reject(OwnerError::capacity,"source logical actor-list40 exhausted (not a physical slot cap)");
     int registry=-1;

@@ -14,6 +14,8 @@
 #include "actor_interaction_services.hpp"
 #include "beach_eevee_chansey.hpp"
 #include "beach_eevee_chansey_source.h"
+#include "beach_initial_species.hpp"
+#include "beach_snorlax_kangaskhan.hpp"
 #include "item_owner.hpp"
 #include "actual_audio_driver.hpp"
 #include "actual_player_source.hpp"
@@ -224,12 +226,24 @@ std::unique_ptr<actor::BehaviorBindings> make_meowth_bindings(const actor::Behav
 }
 
 std::unique_ptr<actor::BehaviorBindings> make_family_bindings(const actor::BehaviorResources& resources) {
-    // Match Runtime's complete-family admission, including callbacks not
-    // transitively reachable from the two initial state roots.
-    const auto callbacks=beach::eevee_chansey_callbacks();
+    // Match Runtime's complete Beach provider, not only the currently observed
+    // pair. Identical-body callbacks in other families must retain their own
+    // identities when the real actor factory proves a graph's whole closure.
+    std::vector<actor::BehaviorCallbackBinding> callbacks;
+    for (const auto family:std::array{beach::initial_species_callbacks(),
+            beach::snorlax_kangaskhan_callbacks(),beach::meowth_callbacks(),
+            beach::eevee_chansey_callbacks(),beach::scyther_special_callbacks()})
+        callbacks.insert(callbacks.end(),family.begin(),family.end());
+    std::vector<std::uint32_t> graphs;
+    for (const auto family:std::array{beach::initial_species_graphs(),
+            beach::snorlax_kangaskhan_graphs(),beach::meowth_graphs(),
+            beach::eevee_chansey_graphs(),beach::scyther_special_graphs()})
+        graphs.insert(graphs.end(),family.begin(),family.end());
+    std::sort(graphs.begin(),graphs.end());
+    graphs.erase(std::unique(graphs.begin(),graphs.end()),graphs.end());
     std::vector<std::uint32_t> roots; roots.reserve(callbacks.size());
     for (const auto& callback:callbacks) roots.push_back(callback.identity);
-    return std::make_unique<actor::BehaviorBindings>(resources,callbacks,beach::eevee_chansey_graphs(),
+    return std::make_unique<actor::BehaviorBindings>(resources,callbacks,graphs,
         std::span<const std::uint32_t>{},roots);
 }
 
@@ -884,6 +898,25 @@ struct Consumer {
                 actor_interaction_process_count(subject.object)==0,
                 "family retirement did not join native state/path processes and unlink actual membership");
     }
+    void beach_static_admission() {
+        std::size_t admitted=0;
+        for (auto& block:world.blocks()) for (const auto& row:block.resource->spawns) {
+            // These three have distinct common/Magikarp/ending admission;
+            // exercise every actual regular-species row, with no OM advance.
+            if (row.id==1003 || row.id==129 || row.id==1001) continue;
+            const auto actor=family_spawn(block,row);
+            require(source(actor).id==row.id &&
+                    source(actor).path==(row.path==world::no_index ?
+                        nullptr:&world.resources().paths[row.path]),
+                    "actual Beach spawn lost its canonical actor or World path");
+            accepted(actors.cleanup(actor.instance));
+            family_joined(actor);
+            accepted(actors.collect_joined());
+            require(!actors.source(actor.instance),"admitted static actor retained joined semantic ownership");
+            ++admitted;
+        }
+        require(admitted>8,"complete Beach admission did not reach later static actor rows");
+    }
     void eevee_chansey(const actor::BehaviorBindings& bindings,bool fresh_only=false) {
         const auto& scene=actors.course_context().beach();
         const auto& initial=scene.resources.initial_scalars();
@@ -892,6 +925,7 @@ struct Consumer {
                 initial.eevee_chansey_path_identity==0 && !scene.eevee_chansey_path,
                 "new scene did not hydrate the admitted four-byte initial shared-path receipt");
         require(world.enter_first(0) && world.error().empty(),"family current World publication failed");
+        if (!fresh_only) beach_static_admission();
 
         // Chansey contributes an actual ROM spawn/path. Eevee's behavior1 and
         // later behavior0 are disclosed typed API inputs: neither requires an

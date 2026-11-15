@@ -1318,22 +1318,31 @@ struct InteractionSourceAccess {
 };
 
 bool InteractionServices::admits_initial_species(const ActorInitialization& initialization,
-    const void* path) noexcept {
+    const void* path, const char** rejection) noexcept {
+    if (rejection) *rejection = nullptr;
+    const auto reject = [rejection](const char* reason) noexcept {
+        if (rejection) *rejection = reason;
+        return false;
+    };
     try {
-        if (services_.failed() || world_.retired() || !world_.error().empty()) return false;
+        if (services_.failed()) return reject("scene-services-failed");
+        if (world_.retired()) return reject("world-retired");
+        if (!world_.error().empty()) return reject("world-failed");
         resources_.require_live();
         bindings_.require_live();
         if (actors_.course_context().course_id()>=1 && actors_.course_context().course_id()<=5) {
             bool admitted=false;
             for (std::size_t i=0;i<native_initialization_count_;++i)
                 admitted |= native_initializations_[i]==&initialization;
-            return admitted && admits_native_path(path);
+            if (!admitted) return reject("native-initialization");
+            return admits_native_path(path) || reject("native-source-world-path");
         }
         if (actors_.course_context().course_id()==6) {
             bool admitted = false;
             for (const auto* admitted_initialization : rainbow_initializations_)
                 admitted |= admitted_initialization==&initialization;
-            return admitted && admits_rainbow(path);
+            if (!admitted) return reject("rainbow-initialization");
+            return admits_rainbow(path) || reject("rainbow-source-world-path");
         }
         const bool butterfree = &initialization == butterfree_ && butterfree_assets_;
         const bool doduo = &initialization == doduo_ && doduo_assets_;
@@ -1347,16 +1356,17 @@ bool InteractionServices::admits_initial_species(const ActorInitialization& init
                 family = &remaining_families[i];
                 break;
             }
-        if (!butterfree && !doduo && !lapras && !pidgey && !pikachu && !sign && !family) return false;
+        if (!butterfree && !doduo && !lapras && !pidgey && !pikachu && !sign && !family)
+            return reject("factory-or-animation-assets");
         bool current = false;
         for (const auto& block : world_.blocks())
             if (&block == world_.current() && block.resource) { current = true; break; }
-        if (!current) return false;
+        if (!current) return reject("current-world-block");
         if (path) {
             bool found = false;
             for (const auto& candidate : world_.resources().paths)
                 if (&candidate == path) { found = true; break; }
-            if (!found) return false;
+            if (!found) return reject("canonical-world-path");
         }
         // Original Root Movement_Init creates actors before publishing its
         // Player model and shared FX helpers. Prove the actual prepared Source
@@ -1366,27 +1376,27 @@ bool InteractionServices::admits_initial_species(const ActorInitialization& init
         IslePlayerSource* active = nullptr;
         if (player.game != services_.game ||
             isle_player_source_context(services_.game, &active) != ISLE_GAME_OK ||
-            active != &player) return false;
+            active != &player) return reject("canonical-player-source");
         if (family) {
             unsigned group = family->group;
             for (const auto& binding : family->callbacks)
                 if (binding.identity >= family->first_callback && binding.identity <= family->last_callback &&
-                    bindings_.callback(binding.identity) != binding.function) return false;
+                    bindings_.callback(binding.identity) != binding.function) return reject("family-callback");
             for (const auto identity : family->graphs)
                 if (!bindings_.admits_native_graph(bindings_.graph(identity),
-                        remaining_species_callback, &group)) return false;
+                        remaining_species_callback, &group)) return reject("family-graph-closure");
             for (const auto& list : family->weighted) {
                 const auto& weighted = bindings_.weighted_states(list.identity);
-                if (weighted.rows.size() != list.callbacks.size() + 1) return false;
+                if (weighted.rows.size() != list.callbacks.size() + 1) return reject("family-weighted-extent");
                 std::int32_t total = 0;
                 for (std::size_t i = 0; i < list.callbacks.size(); ++i) {
                     if (weighted.rows[i].weight != list.weights[i] ||
                         weighted.rows[i].func != bindings_.callback(list.callbacks[i]) ||
-                        remaining_species_group(weighted.rows[i].func) != group) return false;
+                        remaining_species_group(weighted.rows[i].func) != group) return reject("family-weighted-callback");
                     total += list.weights[i];
                 }
                 if (weighted.total_weight != total || weighted.rows.back().weight != 0 ||
-                    weighted.rows.back().func) return false;
+                    weighted.rows.back().func) return reject("family-weighted-terminal");
             }
             if (family->id == 1005) {
                 // Either weighted outcome spawns through a real original
@@ -1394,8 +1404,9 @@ bool InteractionServices::admits_initial_species(const ActorInitialization& init
                 const ActorInitialization* scyther = nullptr;
                 for (std::size_t i = 0; i < remaining_.size(); ++i)
                     if (remaining_families[i].id == 123) scyther = remaining_[i];
-                if (!pidgey_ || !scyther || !admits_initial_species(*pidgey_, path) ||
-                    !admits_initial_species(*scyther, path)) return false;
+                if (!pidgey_ || !scyther) return reject("child-factory");
+                if (!admits_initial_species(*pidgey_, path, rejection) ||
+                    !admits_initial_species(*scyther, path, rejection)) return false;
                 bool pidgey_definition = false, scyther_definition = false;
                 const auto initializations = resources_.initializations();
                 for (const auto& definition : resources_.definitions()) {
@@ -1409,7 +1420,7 @@ bool InteractionServices::admits_initial_species(const ActorInitialization& init
                         definition.actor_id == 123 && definition.factory_identity == 0x802c9204u &&
                         init == scyther;
                 }
-                if (!pidgey_definition || !scyther_definition) return false;
+                if (!pidgey_definition || !scyther_definition) return reject("child-singleton-definition");
             }
             return true;
         }
@@ -1420,7 +1431,7 @@ bool InteractionServices::admits_initial_species(const ActorInitialization& init
         // and every graph/weighted dependency, not merely today's winning row.
         for (const auto& binding : beach::initial_species_callbacks())
             if (initial_species_group(binding.function) == group &&
-                bindings_.callback(binding.identity) != binding.function) return false;
+                bindings_.callback(binding.identity) != binding.function) return reject("initial-callback");
         for (const auto identity : beach::initial_species_graphs()) {
             const bool family_graph = group == 8 ? identity == 0x802ccd60u :
                 group == 16 ? (identity == 0x802ccf14u || identity == 0x802ccf44u) :
@@ -1432,18 +1443,18 @@ bool InteractionServices::admits_initial_species(const ActorInitialization& init
                     identity == 0x802cde48u || identity == 0x802cde78u || identity == 0x802cdef8u ||
                     identity == 0x802cdf98u || identity == 0x802cdfd8u);
             if (family_graph && !bindings_.admits_native_graph(bindings_.graph(identity),
-                    initial_species_callback, &group)) return false;
+                    initial_species_callback, &group)) return reject("initial-graph-closure");
         }
         if (pikachu) {
             const auto& weighted = bindings_.weighted_states(0x802cde30u);
             if (weighted.rows.size() != 3 || weighted.total_weight != 2 ||
                 weighted.rows[0].weight != 1 || weighted.rows[0].func != func_beach_802CB36C ||
                 weighted.rows[1].weight != 1 || weighted.rows[1].func != func_beach_802CB3DC ||
-                weighted.rows[2].func != nullptr) return false;
+                weighted.rows[2].func != nullptr) return reject("initial-weighted-closure");
         }
         return true;
     } catch (...) {
-        return false;
+        return reject("resource-or-closure-lookup");
     }
 }
 bool InteractionServices::admits_ending(const ActorInitialization& initialization) noexcept {

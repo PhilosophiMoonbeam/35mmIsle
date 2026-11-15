@@ -189,3 +189,20 @@ void actor_control_spawn_helper_process(IsleGameObject* object) {
     Pokemon_SetState(object, NULL);
     ++f->after_end;
 }
+
+/* Deliberately identical bodies: these distinct Source identities must survive
+ * retail linker optimization, just like the real cross-family Beach paths. */
+void actor_control_identical_a(IsleGameObject* object) {
+    ActorControlFixture* f = fixture(object);
+    record(f, 74);
+    ohWait(1);
+    record(f, 75);
+    omEndProcess(NULL);
+}
+void actor_control_identical_b(IsleGameObject* object) {
+    ActorControlFixture* f = fixture(object);
+    record(f, 74);
+    ohWait(1);
+    record(f, 75);
+    omEndProcess(NULL);
+}

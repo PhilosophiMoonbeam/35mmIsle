@@ -127,6 +127,7 @@ struct Content {
     enum class Fault {none,rsp,gpu};
     Fault fault=Fault::none;
     g::Frame* fault_frame=nullptr;
+    int lens_witness_lane=-1;
     static bool prepare(void* user,std::span<std::uint32_t> ram,std::uint64_t epoch,const r::Pass& pass,r::Prepared& output) {
         auto& self=*static_cast<Content*>(user);
         require(self.models&&self.actors&&self.items&&self.cart,"real source content not attached before dispatch");
@@ -152,6 +153,42 @@ struct Content {
                 for(std::size_t i=0;i<invalid_load.size();++i)
                     memory.word(output.lanes[0].address+static_cast<std::uint32_t>(i*4),invalid_load[i]);
             }
+        }
+        if(self.lens_witness_lane>=0) {
+            // A diagnostic primitive AFTER the real World/Actor/Detector lane,
+            // not replacement game geometry or a border painted over leakage.
+            // It deliberately spans the target: only the inherited RDP scissor
+            // can keep it inside the lens. Secondary cases exercise real lane
+            // restoration without depending on a subject crossing an edge.
+            const auto lane=static_cast<unsigned>(self.lens_witness_lane);
+            // mainCameraRender unhides -6 before preparing its lane. Suppress
+            // only that separate FX camera here, after the original unhide, so
+            // a later overlay cannot cover the diagnostic primitive.
+            auto& player=self.actors->player_source();
+            IsleGameObjectMetadata effects{};
+            native(isle_game_object_metadata(player.game,self.actors->particle_object(),&effects));
+            native(isle_game_object_set_flags(player.game,self.actors->particle_object(),effects.flags|1u));
+            require(lane<4,"lens witness lane escaped the source buffers");
+            const auto original=output.lanes[0];
+            output.lanes={};
+            if(lane) output.lanes[0]=original;
+            graphics::Memory memory(ram);
+            auto cursor=static_cast<std::uint32_t>(line_arena.offset);
+            const auto command=[&](std::uint32_t first,std::uint32_t second) {
+                require(cursor+8<=line_arena.offset+line_arena.size,"lens witness exceeded its owned arena");
+                memory.word(cursor,first);memory.word(cursor+4,second);cursor+=8;
+            };
+            if(!lane&&original.words) command(0xde000000u,original.address);
+            command(0xe7000000u,0);
+            command(0xe3000a01u,0); // ONE_CYCLE: exact pixel scissor, not fill-cycle quantization.
+            command(0xe200001cu,0);
+            command(0xfcffffffu,0xfffdf6fbu); // Primitive RGBA.
+            command(0xfa000000u,0xffffffffu);
+            command(0xf65003c0u,0); // Full 320x240 rectangle, exclusive bottom/right.
+            command(0xe7000000u,0);
+            command(0xdf000000u,0);
+            output.lanes[lane]={static_cast<std::uint32_t>(line_arena.offset),
+                (cursor-static_cast<std::uint32_t>(line_arena.offset))/4u};
         }
         // A real producer has captured the prefix and committed history. Reject
         // this preparation before original ProcessImage; never fake completion.
@@ -294,6 +331,78 @@ struct Evidence {
         return false;
     }
 };
+// GAME player.c:980-990 changes viewport and lens scissor independently;
+// pokemon_detect.c:193-199 restores the latter after every real region copy.
+// Observe actual raster output after that copy, not an echoed command predicate.
+template<class Tick>
+void lens_clipping_regression(scene::Services& services,g::Frame& frame,Content& content,
+    const photo::LightingInputs& lighting,player::Renderer& renderer,IslePlayerSource& source,
+    focus::Detector& detector,actor::DetectorBinding& detection,IsleGameObject* main_object,
+    std::span<IsleGameObject* const> overlays,const std::filesystem::path& output,Tick&& tick) {
+    const IsleGameCameraParameters* parameters=nullptr;
+    native(isle_game_camera_parameters(services.game,source.camera,&parameters));
+    const auto viewport=parameters->viewport;
+    const sprite::Bounds border{source.MainCameraBorderXmin,source.MainCameraBorderYmin,
+        source.MainCameraBorderXmax,source.MainCameraBorderYmax};
+    std::array<std::uint32_t,3> flags{};
+    require(overlays.size()==flags.size(),"lens regression needs every actual overlay camera");
+    for(std::size_t i=0;i<overlays.size();++i) {
+        IsleGameObjectMetadata metadata{};
+        native(isle_game_object_metadata(services.game,overlays[i],&metadata));flags[i]=metadata.flags;
+        native(isle_game_object_set_flags(services.game,overlays[i],metadata.flags|1u));
+    }
+    struct Restore {
+        scene::Services& services;Content& content;IslePlayerSource& source;
+        IsleGameViewport viewport;sprite::Bounds border;
+        std::span<IsleGameObject* const> overlays;const std::array<std::uint32_t,3>& flags;
+        ~Restore() {
+            content.lens_witness_lane=-1;
+            (void)isle_game_camera_set_viewport(services.game,source.camera,&viewport);
+            (void)isle_player_render_invoke_viewport(&source,border.left,border.top,border.right,border.bottom);
+            for(std::size_t i=0;i<overlays.size();++i)
+                (void)isle_game_object_set_flags(services.game,overlays[i],flags[i]);
+        }
+    } restore{services,content,source,viewport,border,overlays,flags};
+    // Ten source zoom steps: viewport moves 2 pixels, lens border 3x2 pixels.
+    // The viewport is intentionally not equal to the lens; using it alone fails.
+    const IsleGameViewport zoom{{560,400,511,0},{640,480,511,0}};
+    constexpr sprite::Bounds lens{30,20,290,220};
+    for(unsigned scenario=0;scenario<5;++scenario) {
+        const bool restored=scenario==4;
+        const auto expected=restored?border:lens;
+        native(isle_game_camera_set_viewport(services.game,source.camera,restored?&viewport:&zoom));
+        native(isle_player_render_invoke_viewport(&source,expected.left,expected.top,expected.right,expected.bottom));
+        content.lens_witness_lane=restored?0:static_cast<int>(scenario);
+        const auto context=static_cast<std::uint16_t>(1-detection.context);
+        const auto generation=detector.generation(context);
+        Evidence evidence{lighting,renderer,main_object};
+        require(renderer.begin(frame,{0},{&evidence,Evidence::complete}),renderer.message());
+        g::Poll result;
+        do {result=renderer.poll();if(result==g::Poll::pending) std::this_thread::yield();}
+        while(result==g::Poll::pending);
+        require(result==g::Poll::completed&&evidence.calls==1&&evidence.triangles,
+            "lens witness did not execute actual World/Actor RSP/RDP geometry");
+        require(detector.generation(context)==generation+1&&detection.context==context&&
+            !detector.history(context).empty(),"lens witness skipped the actual Detector prefix/region copy");
+        const auto name=restored?std::string("lens-restored"):std::string("lens-lane")+std::to_string(scenario);
+        const auto completed=frame.completed();
+        require(bool(completed)&&completed.width==320&&completed.height==240&&completed.stride==1280&&
+            completed.rgba.size()==320*240*4,"lens witness has no actual complete RGBA target");
+        // Save even a failed surface so the parent can inspect the real leakage.
+        save(output/(name+".rgba8"),completed.rgba);
+        for(int y=0;y<240;++y) for(int x=0;x<320;++x) {
+            const bool inside=x>=expected.left&&x<expected.right&&y>=expected.top&&y<expected.bottom;
+            for(unsigned channel=0;channel<4;++channel) {
+                const auto actual=std::to_integer<unsigned>(completed.rgba[(y*320+x)*4+channel]);
+                const auto wanted=inside||channel==3?255u:0u;
+                if(actual!=wanted) throw std::runtime_error("lens raster mismatch: "+name+
+                    " x="+std::to_string(x)+" y="+std::to_string(y)+" channel="+std::to_string(channel)+
+                    " expected="+std::to_string(wanted)+" actual="+std::to_string(actual));
+            }
+        }
+        native(renderer.release_completed());tick();
+    }
+}
 // Native SDK0x40/0x10 mechanism diagnostics using the admitted World, Actor,
 // Item, Cart, Photo-prefix, FX and UI producers. These deliberately configured
 // scheduling flags are NOT evidence of naturally reached GAME score_Render.
@@ -975,7 +1084,7 @@ void source_program_contract(const graphics::SourcePrograms& programs) {
     require(empty.empty&&!empty.root.commands&&!empty.terminal.commands,
         "empty process manufactured a task");
 }
-void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure failure,unsigned independent) {
+void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure failure,unsigned independent,bool lens_only=false) {
     require(std::filesystem::create_directory(output),"source scenario directory already exists");
     require(std::filesystem::create_directory(output/"profile"),"source scenario profile creation failed");
     const world::Resources world_resources(snapshot, isle::course::beach_id);const auto& setup=world_resources.setup();
@@ -1259,6 +1368,12 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
                         "physical camera cancellation bypassed Photo holds or changed its logical lifetime");
                     native(renderer.release_completed());
                     if(independent==0) {
+                        const std::array overlays{actual_ui,retained_ui,actors.particle_object()};
+                        lens_clipping_regression(services,frame,content,lighting,renderer,source,
+                            detector,detection,main_object,overlays,output,tick);
+                    }
+                    if(!lens_only) {
+                    if(independent==0) {
                         // Match real camera state, framebuffer0 and cold
                         // color/coverage history; warm AA edges are input state.
                         const auto cold_frame=[&](std::size_t slot) -> g::Frame& {
@@ -1366,6 +1481,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
                     require(after_release&&reinterpret_cast<std::uintptr_t>(after_release)==held_identity,
                         "actual native camera slot did not become reusable after joins plus exact GPU/Photo release");
                     services.erase(while_held);services.erase(after_release);
+                    }
                 }
             }
             }
@@ -1391,10 +1507,16 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
 }
 int main(int argc,char** argv) {
     try {
-        require(argc==3,"usage: player-source-renderer-rsp-smoke PRIVATE_ROM NEW_OUTPUT_DIRECTORY");
+        require(argc==3||(argc==4&&std::string(argv[3])=="--lens-clipping"),
+            "usage: player-source-renderer-rsp-smoke PRIVATE_ROM NEW_OUTPUT_DIRECTORY [--lens-clipping]");
         const std::filesystem::path output=argv[2];require(!output.empty()&&!std::filesystem::exists(output),"source renderer output root must be new");
         require(std::filesystem::create_directories(output),"source renderer private output root creation failed");
         auto snapshot=rom::read_snapshot(argv[1]);
+        if(argc==4) {
+            run(snapshot,output/"lens-clipping",Failure::none,0,true);
+            std::cout<<"actual-RSP/RDP lens clipping component passed; fullgame/Windows11 not claimed\n";
+            return 0;
+        }
         run(snapshot,output/"normal-blink-normal",Failure::none,0);
         run(snapshot,output/"independent-ram",Failure::none,1);
         run(snapshot,output/"failed-prefix",Failure::after_prefix,2);

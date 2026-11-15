@@ -42,10 +42,10 @@
       "sha256": "591394a02c7e987b953166b51e50f4090d29084a780e0c36b23d1b9da93ab89a"
     },
     "src/actor_owner.cpp": {
-      "sha256": "775088b0d94c968ac22a1c1f0b10fcb6b3815ee1156c7fd47997362e19a21f92"
+      "sha256": "828ebfb3579d1ca6c647dd948db3bca264d8873da0e50011cb3baf7d087b22e4"
     },
     "src/actor_owner.hpp": {
-      "sha256": "345b3aacb15e96fa1bd3ef4d15417de56dfb195371cd60ab0ce49817dedbaecc"
+      "sha256": "ef2c93b677c8402dfb3c401d8e82b4c76cce8498813137a2497aaf587e0b9bca"
     },
     "src/scene_services.cpp": {
       "sha256": "bcadd42d078e43272192867d2eaf151abb1f9a83c92f6e99e0c5132e6c5ff097"
@@ -93,7 +93,7 @@
       "sha256": "810064c73888145813a06e3e1439e49874ed8d8f662c92eefb9f1128e5aebaef"
     },
     "tests/actor_control_tests.cpp": {
-      "sha256": "a1b417245a31a8f837b9314322edba39351dfc22be30b50e13389b7934bf7fb9"
+      "sha256": "49c88e88adc538bbcd4bff3cb3d2116884f03eab018a2de6ce742f1a676f2111"
     },
     "tests/actor_owner_rom_smoke.cpp": {
       "sha256": "87ebc8e5a3cafbfead09be68aeafccdc4642c6260e295012a8be809ce85da79c"

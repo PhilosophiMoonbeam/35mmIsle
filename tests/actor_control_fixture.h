@@ -42,6 +42,8 @@ void actor_control_update(IsleGameObject*, void*);
 void actor_control_creation_failure(IsleGameObject*);
 void actor_control_invalid_wait(IsleGameObject*);
 void actor_control_spawn_helper_process(IsleGameObject*);
+void actor_control_identical_a(IsleGameObject*);
+void actor_control_identical_b(IsleGameObject*);
 int actor_control_joined(const IsleGameProcess*);
 int actor_control_payload_empty(const IsleGameObject*);
 void* actor_control_update_context(const IsleGameObject*);

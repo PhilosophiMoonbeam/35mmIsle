@@ -71,6 +71,7 @@ struct Producer::Impl {
     std::array<focus::Subject,focus::history_capacity> previous_subjects{}, current_subjects{};
     std::size_t previous_count = 0, appended_count = 0, current_count = 0;
     std::uint16_t source_context = 0;
+    focus::Scissor capture_scissor{};
     bool prefix_staged = false;
     focus::Photo staged_photo{};
     std::unique_ptr<menu::model::BorrowedKernel> kernel;
@@ -112,7 +113,7 @@ struct Producer::Impl {
         const auto row=prefix_staged?current_count:previous_count+appended_count;
         require(row<focus::history_capacity,"Actor source focus history capacity exceeded");
         const auto emitted=detector->copies.append_region((lanes[0].size()-counts[0])*2,
-            static_cast<unsigned>(row),detector->scissor,
+            static_cast<unsigned>(row),capture_scissor,
             [this](std::uint32_t a,std::uint32_t b) { command(0,a,b); });
         require(bool(emitted),"Actor source focus copy/scissor capacity rejected");
         if (prefix_staged) current_subjects[current_count++]=subject;
@@ -153,6 +154,12 @@ struct Producer::Impl {
         const bool draw_prefix=detector && prefix_visible && (!pass || pass->includes(prefix_render));
         if (detector) {
             require(detector->context<2,"Actor source detector context is invalid");
+            // SaveRegion restores the current camera's scissor after its 8x8
+            // offscreen copy, not the standalone detector's default target.
+            capture_scissor=pass ? focus::Scissor{
+                static_cast<unsigned>(pass->scissor.left),static_cast<unsigned>(pass->scissor.top),
+                static_cast<unsigned>(pass->scissor.right),static_cast<unsigned>(pass->scissor.bottom)} :
+                detector->scissor;
             source_context=detector->context;
             previous_count=detector->history.history(source_context).size();
             if (draw_prefix) {

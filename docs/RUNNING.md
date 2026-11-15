@@ -129,6 +129,19 @@ without overwriting that temporary file or the previous report; the process
 returns nonzero. Non-diagnostic launches neither show the label nor write this
 report. `--data-directory` selects the same storage as ordinary play.
 
+For an unexpected exit, preserve that report before another diagnostic launch
+replaces it. The console prints its location after cleanup. If you supplied
+`--data-directory`, look there; the Windows default is normally
+`%APPDATA%\35mmIsle\35mmIsle\last-diagnostic.txt` (the SDL preference directory):
+
+```powershell
+Get-Content (Join-Path $env:APPDATA "35mmIsle\35mmIsle\last-diagnostic.txt")
+```
+
+Paste the report and the relevant console tail; no JSON or save-file editing is
+needed. Missing reports are not a reason to delete your profile or replay a
+known failing course. Include a screenshot of visual faults when available.
+
 The report includes no ROM/profile payload, inventory, credentials, telemetry
 or public upload. Review error text for private filesystem paths before pasting
 the relevant text into chat. **Audio fidelity remains unqualified:** playback

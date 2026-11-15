@@ -342,6 +342,11 @@ endif()
 include(CTest)
 if(ISLE_BUILD_GAME_ENGINE)
     include(cmake/SnapEngine.cmake)
+    if(MSVC)
+        # Source callback admission and process keys require distinct function addresses.
+        # Retail COMDAT folding can merge identical handlers from different families.
+        target_link_options(isle-engine INTERFACE /OPT:NOICF)
+    endif()
     include(cmake/CommonEggSource.cmake)
     target_sources(isle-engine PRIVATE src/menu_scene_bridge.c src/menu_scene_bridge.h)
     if(TARGET isle-pidgey-resources)

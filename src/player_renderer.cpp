@@ -914,6 +914,12 @@ bool Renderer::begin(g::Frame& frame,g::FrameContext context,g::CompletedWork wo
             pass.camera=camera.projection;pass.priority=static_cast<std::uint32_t>(camera.priority);
             pass.flags=camera.flags;pass.background_rgba=camera.background;pass.link_mask=camera.link_mask;
             pass.camera_tag=camera.tag;pass.tag_match=camera.tag_match;pass.userdata=&record;pass.control=Impl::dispatch;
+            // GAME mainCameraPreRender installs the live lens border on every
+            // lane. Carry that same state into providers which temporarily
+            // replace the scissor (notably PokemonDetector_SaveRegion).
+            if(camera.prerender==isle_player_mainCameraPreRender)
+                pass.scissor={self.source.MainCameraBorderXmin,self.source.MainCameraBorderYmin,
+                    self.source.MainCameraBorderXmax,self.source.MainCameraBorderYmax};
             const bool sprites=camera.render==isle_player_render_sprite_camera&&!record.effects;
             pass.kind=sprites?r::Kind::sprites:r::Kind::compiled;
             pass.prepare=sprites?nullptr:Impl::prepare_provider;

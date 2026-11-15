@@ -6,26 +6,35 @@ Current release status, reported defects and explicitly bounded historical quali
 
 ## Runtime status
 
-[Runtime preview 8](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.8)
-pins source `45995a4`; all ten native hosted jobs and its downloaded Linux
-title/menu smoke passed. A Windows user subsequently reported a first-course
-exit at actor callback-closure admission and geometry outside the zoomed lens.
-Inspection of the released Windows executable confirms distinct callback
-identities sharing native addresses. The source corrections preserve those
-addresses with MSVC `/OPT:NOICF` and restore live lens clipping after detector
-copies. Targeted GNU Release checks pass runtime process-identity/cancellation,
-all static Beach species admission, and actual RSP/RDP lens-border pixels across
-four lanes plus zoom-out restoration. Native Windows artifact verification and
-updated executable delivery are separate gates; preview 8 is not silently replaced.
+[Runtime preview 9](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.9)
+pins source `b701ece83f6f0719a232b748e7f936244dcfc984`. All ten
+[native hosted jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/43700351783)
+pass, including native MSVC Release/Debug and GNU/Clang checks. Both retained
+Runtime archives were independently resealed; all seven published assets were
+downloaded anonymously and matched their exact hashes and six checksum rows.
+The actual downloaded Linux product rendered Title, handled unconfigured F9
+without exiting and closed normally with GAME joined/Host closed; all 126
+installed payload records remained unchanged.
 
-A subsequent Windows report identified playback on monitor speakers instead of
-the system default. Corrected source replaces first-enumerated endpoint selection
-with SDL's migratable default policy while preserving explicit physical pinning.
-Actual isolated two-endpoint software routing, default changes, endpoint removal
-and stream closure pass; Windows physical routing and hearing remain unqualified.
+Preview 8 remains available with its original assets and reported negative
+evidence: Windows first-course actor admission failure, geometry outside the
+zoomed viewfinder, and playback on monitor speakers instead of the system default.
+Preview 9 preserves callback identity with transitive MSVC `/OPT:NOICF`,
+restores the live lens scissor after detector copies and selects SDL's migratable
+default playback policy without weakening explicit endpoint pinning. Inspection
+of the actual Windows executable matches 199 registry rows and finds all seven
+formerly merged callback addresses distinct. Its native host suite passes 64/64.
+
+Targeted native regressions cover selective cancellation of identical-body
+callbacks, all regular static Beach species admission, actual RSP/RDP lens pixels
+across four lanes and zoom-out restoration, and audio transport ownership.
+Actual isolated two-endpoint software routing observes non-first default
+selection, default migration and explicit-device removal. Windows physical
+routing, hearing and provisioned gameplay remain unqualified. See the
+[exact-source packaging receipt](development/admission/RUNTIME_PACKAGING.md#preview9-feedback-corrections-and-public-delivery).
 
 The campaign and fidelity evidence below is historical, not qualification of
-preview 8 or its repaired successor. Windows 11 provisioned acceptance remains
+preview 9. Windows 11 provisioned acceptance remains
 deferred; the user's observed failure is retained as negative product evidence.
 
 The current fresh-campaign consumer uses actual Host ControlDeck acquisition and an external pixel-only operator; Native entry/retirement, presentation, input ACK and immutable durable-Save evidence flows one way. Its [current Linux checks](development/admission/PUBLIC_CONTROLLER.md#native-public-controldeck-campaign-cutover-and-negative-pilot) exercise visible Boot/Title/New Game/Name, reject early close, independently reach genuine Name/Oak/Save/Title with the acknowledged immutable snapshot retained through owner retirement, and drain a genuinely submitted Camera Check preview on ordinary Host stop without a fault or Entry result. Incomplete campaigns exit nonzero; the separate cancellation diagnostic is not campaign success. **A complete current-build pixel-only campaign and Windows 11 gameplay remain unqualified.** Historical software-controller campaigns below do not establish that newer input-policy gate.

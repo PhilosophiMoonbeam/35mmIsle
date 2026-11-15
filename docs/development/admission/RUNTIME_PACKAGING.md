@@ -1,17 +1,50 @@
 # Runtime products and composition
 
-Current preview8 composition is described first; older package/relink execution
-records below remain historical and do not qualify the LLVM backend.
+Current preview9 delivery and the retained native LLVM composition are described
+first; older execution records do not qualify the current backend or campaign.
 
 [Admission index](../ADMISSION.md) · [Project README](../../../README.md)
 
 Contents:
 
+- [Preview9 feedback corrections and public delivery](#preview9-feedback-corrections-and-public-delivery)
 - [Preview8 native LLVM composition and candidates](#preview8-native-llvm-composition-and-candidates)
 - [Hosted G30 Runtime products and cold Album Replay](#hosted-g30-runtime-products-and-cold-album-replay)
 - [Published Linux startup failure paths](#published-linux-startup-failure-paths)
 - [Current downloaded Runtime ordinary input and cold edits](#current-downloaded-runtime-ordinary-input-and-cold-edits)
 - [Runtime composition and private static-library relinking](#runtime-composition-and-private-static-library-relinking)
+
+## Preview9 feedback corrections and public delivery
+
+[Preview 9](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.9)
+pins both Runtime archives, its tag and public source archive to
+`b701ece83f6f0719a232b748e7f936244dcfc984`, not a later documentation commit.
+All ten [native CI jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/43700351783)
+pass. The retained Windows/Linux candidates were independently resealed against
+their exact extracted inventory and source; the final draft was downloaded
+before publication. After publication, anonymous HTTPS downloads with curl
+configuration and GitHub authentication disabled matched all seven asset hashes,
+server digests and the six `SHA256SUMS` entries. `BUILD-RECORD.json` binds the
+native jobs, candidate artifacts, executable identities and exercised scopes.
+
+The corrections preserve address-sensitive callbacks through MSVC `/OPT:NOICF`,
+restore the live lens scissor after detector copies and open SDL's system-default
+playback policy rather than the first physical endpoint. The actual optimized
+Windows PE matches 199 complete registry rows and retains all seven formerly
+merged callback identities; its native host suite passes 64/64, including
+process cancellation and audio transport checks. Actual RSP/RDP pixels cover all
+four lens lanes and zoom-out restoration. An isolated two-endpoint software
+backend observes default selection/migration and pinned-device removal.
+
+The actual downloaded Linux executable renders Title, accepts one unconfigured
+F9 with window-title feedback and remains running until ordinary window close.
+It exits 0 with GAME joined/Host closed, no Native signals and all 126 payload
+records unchanged. Loader resolution works without `LD_LIBRARY_PATH`;
+required symbol floors remain `GLIBC_2.38`, `GLIBCXX_3.4.32`, `CXXABI_1.3.13`.
+These checks do not establish a complete current-build campaign, Windows 11
+gameplay, physical speaker/controller/GPU qualification or Original fidelity.
+First-use LLVM compile pauses remain explicit. Preview8's original seven assets
+and negative user evidence are preserved; its release notice links the repair.
 
 ## Preview8 native LLVM composition and candidates
 

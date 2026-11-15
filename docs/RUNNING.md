@@ -14,8 +14,8 @@ Prebuilt preview Runtime archives do not require development SDKs or build tools
 
 ### Prebuilt Runtime
 
-Download the Windows x64 Runtime ZIP or Linux x64 Runtime TAR.GZ from
-[GitHub Releases](https://github.com/PhilosophiMoonbeam/35mmIsle/releases).
+Download the corrected Windows x64 Runtime ZIP or Linux x64 Runtime TAR.GZ from
+[preview 9](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.9).
 GitHub's automatic source-code archives are not executables. Extract the
 **whole Runtime package**, including `bin/`, libraries, shaders and notices;
 do not copy only the executable.
@@ -27,23 +27,19 @@ Open a terminal in the extracted directory containing `bin/`.
 Windows PowerShell:
 
 ```powershell
-$Data = Join-Path $env:LOCALAPPDATA "35mmIsle\preview8"
-New-Item -ItemType Directory -Force -Path $Data | Out-Null
-.\bin\35mmisle.exe "C:\path\pokemonsnap.z64" --data-directory $Data --diagnostics
+.\bin\35mmisle.exe "C:\path\pokemonsnap.z64" --diagnostics
 ```
 
 Linux:
 
 ```sh
-DATA="$HOME/.local/share/35mmIsle/preview8"
-mkdir -p "$DATA"
-./bin/35mmisle "/path/to/pokemonsnap.z64" --data-directory "$DATA" --diagnostics
+./bin/35mmisle "/path/to/pokemonsnap.z64" --diagnostics
 ```
 
-Replace the ROM path. These commands isolate preview data from older profiles;
-no configuration or JSON editing is needed. `--diagnostics` is optional and
-does not automate play. See [controls](#native-application) and
-[diagnostic reporting](#opt-in-diagnostic-labels) below.
+Replace the ROM path. Existing default application data is reused; select a
+different data root with `--data-directory` only when intended. No configuration
+or JSON editing is needed. `--diagnostics` is optional and does not automate play.
+See [controls](#native-application) and [diagnostic reporting](#opt-in-diagnostic-labels).
 
 The LUS frontend needs working OpenGL support; canonical game rendering needs
 a Vulkan loader and compatible device/driver. Linux also requires compatible
@@ -69,7 +65,7 @@ The Windows full-host preset builds `build/windows-host-release/Release/35mmisle
 Canonical Save slots live in `<data-directory>/profile`; pass the data root,
 not that `profile` subdirectory. Diagnostic text reports live in the data root.
 
-Corrected builds use SDL's system-default playback device and follow default-device
+Preview 9 uses SDL's system-default playback device and follows default-device
 changes. Preview 8 instead selected the first enumerated endpoint, which could
 send sound to monitor speakers. This routing correction does not establish
 Original audio fidelity or physical-device qualification.
@@ -90,9 +86,13 @@ Default keyboard controls:
 |`Z`|Hold Z: camera viewfinder|
 |`Space`|Start: Title menu; course pause|
 
-These bindings are exercised through ordinary SDL keyboard input in the downloaded Linux product. Gamepad/device qualification remains separate.
+Earlier downloaded Linux products exercised these bindings through ordinary SDL keyboard input. Preview 9's narrow smoke covers Title, F9 feedback and normal closure; gamepad/device qualification remains separate.
 
-Current candidate-specific execution evidence is in [Runtime status](STATUS.md#runtime-status) and [ADMISSION](development/ADMISSION.md); earlier campaign, numerical, photo and menu proofs do not transfer automatically to a changed executable. Historical [preview 7](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.7) remains immutable. Preview8 replaces the production RSP JIT with source-backed LLVM 21.1.8 and the selected MIT parallel-rsp helpers. Ordinary push/PR CI never publishes; an explicit manual dispatch may retain checked Windows ZIP/Linux TGZ candidates for maintainer download, exact-hash inspection and smoke before separate final publication. See [BUILDING](BUILDING.md#preview8-candidate-retention). The maintainer's clean-room Snap distribution basis is recorded in [LICENSING](planning/LICENSING.md#preview8-maintainer-disposition); actual third-party notices still apply. No ROM, extracted assets, private profiles/captures or SDK is bundled. Hosted MSVC `/MT` packaging is not Windows 11 gameplay, hardware, full-campaign or fidelity qualification.
+**F9 is optional Snap Station printing**, not a camera/course control. Without
+`--snap-station-directory`, it only reports “no output directory configured” in
+the window title; it does not connect a printer or request application exit.
+
+Current candidate-specific execution evidence is in [Runtime status](STATUS.md#runtime-status) and [ADMISSION](development/ADMISSION.md); earlier campaign, numerical, photo and menu proofs do not transfer automatically to a changed executable. Preview 9 pins `b701ece`, passes all ten native hosted jobs and preserves preview 8's original assets with a public defect notice. Its production RSP backend remains source-backed LLVM 21.1.8 and the selected MIT parallel-rsp helpers. Ordinary push/PR CI never publishes; explicit manual dispatch retains checked candidates for exact-byte inspection and smoke before separate final publication. See [BUILDING](BUILDING.md#preview8-candidate-retention). The maintainer's clean-room Snap distribution basis is recorded in [LICENSING](planning/LICENSING.md#preview8-maintainer-disposition); actual third-party notices still apply. No ROM, extracted assets, private profiles/captures or SDK is bundled. Hosted MSVC `/MT` packaging is not Windows 11 gameplay, hardware, full-campaign or fidelity qualification.
 
 ### Opt-in diagnostic labels
 

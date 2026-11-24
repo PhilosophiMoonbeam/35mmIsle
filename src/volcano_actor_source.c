@@ -29,7 +29,7 @@ static int services_complete(const IsleVolcanoActorServices* p) {
         p->sound_stop_all &&
         p->bgm_volume &&
         p->bgm_stop &&
-        p->bgm_play &&
+        p->background_music &&
         p->environment_sound &&
         p->remove_items &&
         p->reset_camera &&
@@ -363,9 +363,9 @@ void isle_volcano_actor_bgm_stop(IsleVolcanoActorSource* s) {
     isle_volcano_actor_checked(s,result);
 }
 
-void isle_volcano_actor_bgm_play(IsleVolcanoActorSource* s, int32_t song) {
+void isle_volcano_actor_background_music(IsleVolcanoActorSource* s, int32_t song) {
         isle_volcano_actor_enter(s);
-    IsleGameResult result=s->services->bgm_play(s, song);
+    IsleGameResult result=s->services->background_music(s, song);
     isle_volcano_actor_checked(s,result);
 }
 

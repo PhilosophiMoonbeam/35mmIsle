@@ -8,9 +8,9 @@ from pathlib import Path
 from prepare_engine import git, publish
 REVISION='df8815e75f3d79618466e01e0827c6165b93d11c'
 PROVIDER='volcano-actor'
-VERSION='volcano-complete312-typed-v2'
-RECIPE_SHA256='921d8449e6b314a27d8381c062f61263a9ae7fc82b5ed1fe4442ed1b64ce60ff'
-OUTPUT_SHA256='5174afc2a0ab62c50549809b72a0cc3e013fb4b663980d4e06d71b3e444cc1bb'
+VERSION='volcano-complete312-typed-v3'
+RECIPE_SHA256='cc10c119bc66b3deaf8eedcd73240018b461000c3b14f508338a9723b75000a6'
+OUTPUT_SHA256='6f1c929f37b6c0706309014e5cd98b717ad640464b2408c69fbaf76b44622775'
 def digest(raw):return hashlib.sha256(raw).hexdigest()
 def canonical(value):return digest(json.dumps(value,sort_keys=True,separators=(',',':')).encode())
 def rewrite(body,changes):

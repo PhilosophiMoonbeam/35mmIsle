@@ -45,13 +45,14 @@ a::Error startup_effects(const Resources&, const std::array<a::effects::PoleFilt
 a::Error native_startup_effects(const Resources&, std::array<a::effects::Section, 8>&,
                                 a::effects::Config&) noexcept;
 
-// A checked consumer, not a Null sink. Every callback is required. The owner
-// outlives Session. Calls are serialized with gameplay; inspect can originate
-// from an active GAME continuation. Owner-affine host APIs must synchronously
-// rendezvous with their constructing owner, not return cached readiness. submit,
-// finish and poll run on the service owner. submit must
-// synchronously own exactly accepted_frames of the prefix, even on would_block;
-// failure may accept a prefix but is terminal, never retried. Native S16 stereo.
+// A checked consumer, not a Null sink. Every callback is required. The borrowed
+// owner outlives Session. The sole serialized producer calls inspect, submit,
+// finish and poll; inspect can originate from an active GAME continuation.
+// With SDL, these callbacks may directly use thread-safe stream operations;
+// creation and destruction of the endpoint stay on the main thread.
+// submit must synchronously own exactly accepted_frames of the prefix, even on
+// would_block; failure may accept a prefix but is terminal, never retried.
+// Native S16 stereo.
 struct Output {
     enum class State { ready, draining, drained, failed };
     enum class Submit { accepted, would_block, failed };

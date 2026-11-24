@@ -26,6 +26,7 @@ namespace {
 #ifdef _WIN32
 using Argument=wchar_t;
 constexpr std::wstring_view help_option=L"--help",data_option=L"--data-directory";
+constexpr std::wstring_view fullscreen_option=L"--fullscreen",windowed_option=L"--windowed";
 constexpr std::wstring_view cpu_option=L"--cpu-renderer",input_option=L"--disable-input";
 constexpr std::wstring_view station_option=L"--snap-station-directory";
 constexpr std::wstring_view resources_option=L"--renderer-resources";
@@ -35,6 +36,7 @@ constexpr std::wstring_view campaign_purpose=L"campaign",cold_boot_purpose=L"col
 #else
 using Argument=char;
 constexpr std::string_view help_option="--help",data_option="--data-directory";
+constexpr std::string_view fullscreen_option="--fullscreen",windowed_option="--windowed";
 constexpr std::string_view cpu_option="--cpu-renderer",input_option="--disable-input";
 constexpr std::string_view station_option="--snap-station-directory";
 constexpr std::string_view resources_option="--renderer-resources";
@@ -44,6 +46,7 @@ constexpr std::string_view campaign_purpose="campaign",cold_boot_purpose="cold-b
 #endif
 void usage(std::ostream& out) {
     out<<"Usage: 35mmisle <ROM> [--data-directory <directory>] [--cpu-renderer] [--disable-input]\n"
+         "                  [--fullscreen | --windowed]\n"
          "                  [--snap-station-directory <directory>]\n"
          "                  [--renderer-resources <directory>]\n"
          "                  [--diagnostics]\n"
@@ -53,6 +56,7 @@ void usage(std::ostream& out) {
          "The ROM is read and normalized in memory, never modified or bundled.\n"
          "--cpu-renderer requires a CPU Vulkan device for canonical rendering.\n"
          "--disable-input disables controller acquisition for diagnostics; no controller is invented.\n"
+         "--fullscreen or --windowed overrides the saved mode at startup; F11 toggles during play.\n"
          "--renderer-resources selects an explicit existing pinned shader-resource directory.\n"
          "--snap-station-directory configures an existing output directory; F9 connects/disconnects.\n"
          "--diagnostics enables a passive on-screen run/scene/frame/error label and private text report.\n"
@@ -121,6 +125,14 @@ int run(int argc,Argument** argv) {
         if (option==cpu_option) application_config.require_cpu_renderer=true;
         else if (option==input_option) host_config.input=isle::game_host::InputMode::diagnostic_disabled;
         else if (option==diagnostics_option) diagnostics=true;
+        else if (option==fullscreen_option||option==windowed_option) {
+            const bool fullscreen=option==fullscreen_option;
+            if (host_config.startup_fullscreen&&*host_config.startup_fullscreen!=fullscreen) {
+                std::cerr<<"--fullscreen and --windowed cannot be combined.\n";
+                return 2;
+            }
+            host_config.startup_fullscreen=fullscreen;
+        }
         else if (option==data_option&&index+1<argc) host_config.data_directory=std::filesystem::path(argv[++index]);
         else if (option==station_option&&index+1<argc) station_directory=std::filesystem::path(argv[++index]);
         else if (option==resources_option&&index+1<argc) {
@@ -216,6 +228,7 @@ int run(int argc,Argument** argv) {
                 std::cerr<<made.message.data()<<'\n';return finish(1);
             }
             platform=std::move(made.host);host_closed=false;
+            host_config.startup_fullscreen.reset();
             auto& host=*platform;
             host_config.data_directory=host.data_directory();
             if (profile.empty()) {

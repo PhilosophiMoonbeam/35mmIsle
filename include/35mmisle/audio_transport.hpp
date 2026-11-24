@@ -12,11 +12,12 @@
 
 namespace isle::audio {
 // Original SDL-only leaf, not a Ship::Audio backend or producer/PCM-lease owner.
-// All application calls, destruction and SDL event pumping have one serialized
-// owner on SDL's main thread. The host must keep SDL alive, pump events regularly,
-// keep AUDIO_DEVICE_REMOVED enabled and install no global SDL event filter for
-// this run. Other event consumers may freely remove queued events: the watch
-// observes them first. No application callback, worker or second PCM queue exists.
+// The main-thread owner opens/closes the stream, destroys this object and pumps
+// SDL events. Between open and close a single serialized borrower may service
+// the stream on another thread (SDL's stream service APIs are thread-safe).
+// Quiesce that borrower before close. Keep SDL alive and AUDIO_DEVICE_REMOVED
+// enabled, with no global SDL event filter. Other event consumers may remove
+// queued events: the watch observes them first. No second PCM queue exists.
 //
 // Accepted means SDL copied the whole block, not that a physical endpoint heard
 // it. Queue counts are immutable-format source frames, never guest AI occupancy.
@@ -41,6 +42,8 @@ public:
         // when the default changes. Nonzero must be a currently enumerated
         // physical playback ID; opening/removal never falls back to another ID.
         SDL_AudioDeviceID physical_device = 0;
+        // Leave playback paused while accumulating one nominal device period.
+        bool prime_on_start = false;
     };
     struct Info {
         int sdl_version = 0;
@@ -83,7 +86,7 @@ public:
 
     // A new run starts only after close; it resets that run's retained error.
     // Acquires/balances only its own SDL_INIT_AUDIO reference, never SDL_Quit.
-    // Opens paused, verifies formats/identity, then checks resume before ready.
+    // Opens paused, verifies formats/identity, then resumes unless priming.
     bool open(Config config) noexcept;
     State state() noexcept;
     const Error& error() noexcept;
@@ -95,9 +98,11 @@ public:
     // Success copies synchronously in SDL; the caller may reuse its scratch.
     // No allocation or extra PCM copy is performed by this leaf per submission.
     Submit try_submit(std::span<const std::int16_t> samples) noexcept;
+    // An explicit pause or resume takes over from automatic startup priming.
     bool pause() noexcept;
     bool resume() noexcept;
     // Checked flush exactly once after the last accepted input; no later puts.
+    // Releases any automatic startup pause so even a short tail can drain.
     bool finish_input() noexcept;
     // Requires flush and BOTH input queued/output available == 0. Never steals
     // output with SDL_GetAudioStreamData. The owner supplies a monotonic deadline;
@@ -123,6 +128,8 @@ private:
     Error error_{};
     Info info_{};
     std::uint64_t accepted_source_frames_ = 0;
+    // Nonzero only while startup owns the pause.
+    std::uint64_t prime_source_frames_ = 0;
     bool owns_audio_ = false, watching_ = false, paused_ = false;
     CloseResult close_result_{};
     // The watch touches only these atomics, never owner state/stream/producer.

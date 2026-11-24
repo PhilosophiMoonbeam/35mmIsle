@@ -7,18 +7,20 @@
 #include <SDL3/SDL_timer.h>
 
 #include <array>
+#include <atomic>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace {
 using Output = isle::audio::SdlAudioOutput;
 void require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
 }
-void opened(Output& output, SDL_AudioDeviceID physical = 0) {
-    if (!output.open({32006, 256, physical})) {
+void opened(Output& output, Output::Config config = {32006, 256, 0}) {
+    if (!output.open(config)) {
         throw std::runtime_error(std::string(output.error().operation.data()) + ": " + output.error().message.data());
     }
     require(output.info().logical_device != 0 &&
@@ -59,23 +61,124 @@ void submit_and_consume(Output& output) {
 }
 void finish(Output& output, std::uint64_t accepted) {
     require(output.finish_input() && output.finish_input(), "flush is idempotent");
-    until([&] { return output.poll_drain() == Output::Drain::stream_drained; }, "actual SDL stream did not drain within five seconds");
-    require(output.query().accepted_source_frames == accepted, "backpressure preserves the exact accepted-frame counter");
+    until([&] {
+        const auto drain = output.poll_drain();
+        require(drain != Output::Drain::error, "actual SDL stream reported a drain error");
+        return drain == Output::Drain::stream_drained;
+    }, "actual SDL stream did not drain within five seconds");
+    const auto drained = output.query();
+    require(drained && drained.queued_source_frames == 0 && drained.available_output_bytes == 0 &&
+            drained.accepted_source_frames == accepted, "real consumer drains the exact accepted-frame count");
     const auto closed = output.close();
     require(!closed.failed && closed.disposition == Output::CloseDisposition::stream_drained, "observed stream drain closes without abort");
     require(output.close().disposition == closed.disposition, "close is idempotent");
     require((SDL_WasInit(SDL_INIT_AUDIO) & SDL_INIT_AUDIO) != 0, "transport closes only its own SDL audio reference");
 }
+void require_priming(Output& output, std::size_t frames) {
+    const auto queue = output.query();
+    require(queue && queue.paused && SDL_AudioDevicePaused(output.info().logical_device) &&
+            queue.accepted_source_frames == frames && queue.queued_source_frames == frames,
+            "startup pause retains every accepted whole source frame");
+}
+
+// Observe the actual dummy consumer after conversion, without reading from or
+// competing with the bound SDL stream. Nonzero stereo frames must arrive in
+// order, once each; the rest of the device buffer may be silence.
+struct Postmix {
+    std::atomic<std::size_t> frames{0};
+    std::atomic<bool> mismatch{false};
+    static void SDLCALL observe(void* userdata, const SDL_AudioSpec* spec, float* data, int bytes) {
+        auto& self = *static_cast<Postmix*>(userdata);
+        if (spec->channels != 2 || spec->format != SDL_AUDIO_F32) {
+            self.mismatch.store(true);
+            return;
+        }
+        auto frames = self.frames.load();
+        for (int i = 0; i < bytes / static_cast<int>(sizeof(float)); i += 2) {
+            if (data[i] == 0.0f && data[i + 1] == 0.0f) continue;
+            constexpr std::array<float, 4> expected{0.125f, 0.25f, 0.375f, 0.5f};
+            if (frames >= expected.size() || data[i] != expected[frames] || data[i + 1] != -expected[frames]) {
+                self.mismatch.store(true);
+            }
+            ++frames;
+        }
+        self.frames.store(frames);
+    }
+};
+
+void dummy_priming(int device_rate) {
+    Postmix postmix;
+    Output output;
+    constexpr std::size_t bound = 16384;
+    constexpr int source_rate = 32006;
+    const std::array<std::int16_t, 2> frame{4096, -4096};
+    opened(output, {source_rate, bound, 0, true});
+    require_priming(output, 0);
+    const auto& info = output.info();
+    const auto nominal = (std::uint64_t{static_cast<unsigned>(info.device_buffer_frames)} * source_rate +
+                          info.device.freq - 1) / info.device.freq;
+    const auto target = nominal + (source_rate == info.stream_output.freq ? 0 : 7);
+    require(nominal > 2 && target <= bound, "dummy callback period must fit the preroll regression");
+    const std::vector<std::int16_t> leading(static_cast<std::size_t>(target - 2) * 2, 2048);
+    require(output.try_submit(leading) == Output::Submit::accepted, "accept block below preroll target");
+    require_priming(output, static_cast<std::size_t>(target - 2));
+    require(output.try_submit(frame) == Output::Submit::accepted, "accept penultimate preroll frame");
+    require_priming(output, static_cast<std::size_t>(target - 1));
+    require(output.try_submit(frame) == Output::Submit::accepted, "accept final preroll frame");
+    require(!output.query().paused && !SDL_AudioDevicePaused(info.logical_device),
+            "reaching one converted callback period releases the startup pause");
+    finish(output, target);
+
+    opened(output, {source_rate, bound, 0, true});
+    require(output.try_submit(frame) == Output::Submit::accepted, "accept short finite tail");
+    require_priming(output, 1);
+    require(output.finish_input() && !SDL_AudioDevicePaused(output.info().logical_device),
+            "finish starts a still-priming tail smaller than one callback period");
+    finish(output, 1);
+
+    opened(output, {source_rate, bound, 0, true});
+    require(output.pause(), "explicit pause takes over from startup pause");
+    require(output.try_submit(frame) == Output::Submit::accepted && output.finish_input() &&
+            output.poll_drain() == Output::Drain::pending, "finish does not release an explicit pause");
+    require_priming(output, 1);
+    require(output.resume(), "explicit resume releases the explicitly paused tail");
+    finish(output, 1);
+
+    opened(output, {device_rate, 3, 0, true});
+    require(output.info().device.freq == device_rate && output.info().device_buffer_frames > 3,
+            "limited-bound case requires matching rates and a period larger than the bound");
+    require(SDL_SetAudioPostmixCallback(output.info().logical_device, Postmix::observe, &postmix),
+            "observe PCM read by the actual SDL dummy consumer");
+    const std::array<std::int16_t, 4> first{4096, -4096, 8192, -8192};
+    const std::array<std::int16_t, 4> second{12288, -12288, 16384, -16384};
+    require(output.try_submit(first) == Output::Submit::accepted, "accept the first limited-bound block");
+    require_priming(output, 2);
+    require(output.try_submit(second) == Output::Submit::would_block &&
+            !SDL_AudioDevicePaused(output.info().logical_device),
+            "whole block backpressure releases startup pause without raising the queue bound");
+    until([&] {
+        const auto result = output.try_submit(second);
+        require(result != Output::Submit::error, "retry after priming backpressure");
+        return result == Output::Submit::accepted;
+    }, "limited-bound consumer did not make room for a whole block");
+    until([&] { return postmix.frames.load() >= 4 || postmix.mismatch.load(); },
+          "dummy consumer did not receive every submitted PCM frame");
+    finish(output, 4);
+    require(postmix.frames.load() == 4 && !postmix.mismatch.load(), "dummy consumed exact PCM without loss or repetition");
+}
+
 void dummy() {
     Output output;
     opened(output);
     const auto logical = output.info().logical_device;
+    const auto device_rate = output.info().device.freq;
+    require(!output.query().paused, "default configuration starts without preroll");
     submit_and_consume(output);
     finish(output, 256);
 
     // SDL accepts logical IDs in its open API, but this transport's explicit
     // endpoint contract accepts only currently enumerated physical playback IDs.
-    opened(output, first_playback(false));
+    opened(output, {32006, 256, first_playback(false)});
     Output rejected;
     require(!rejected.open({32006, 256, output.info().logical_device}) &&
             rejected.error().kind == Output::ErrorKind::unavailable_device &&
@@ -95,6 +198,7 @@ void dummy() {
     rejected.close();
     submit_and_consume(output);
     finish(output, 256);
+    dummy_priming(device_rate);
 }
 std::string command() {
     std::string line;
@@ -117,7 +221,7 @@ void routing() {
 
     Output automatic, pinned;
     opened(automatic);
-    opened(pinned, physical);
+    opened(pinned, {32006, 256, physical});
     const auto automatic_id = automatic.info().logical_device;
     const auto pinned_id = pinned.info().logical_device;
     require(named(automatic_id, target_name) && named(pinned_id, first_name),

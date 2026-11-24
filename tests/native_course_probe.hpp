@@ -36,6 +36,8 @@ public:
     // Only after real Host/LUS presentation completed for that same copied Frame.
     void presented(std::int32_t course,std::uint64_t ordinal,std::uint64_t pixelDigest,bool varied);
     bool completed() const noexcept;
+    // The existing Source observer saw all three Volcano music stages.
+    bool volcano_music_restored() const noexcept;
     // Genuine joined empty Source result13 followed by actual Manager Oak13 admission.
     bool empty_completed() const noexcept;
     // Canonical application roll survives course closure; no native object or

@@ -64,6 +64,7 @@ bool SdlAudioOutput::consume_removal() noexcept {
 }
 
 void SdlAudioOutput::cleanup() noexcept {
+    prime_source_frames_ = 0;
     if (watching_) {
         // SDL 3.4.2 SDL_eventwatch.c holds the same watch-list mutex throughout
         // dispatch and removal. On this non-callback owner, removal fences any
@@ -195,12 +196,25 @@ bool SdlAudioOutput::open(Config config) noexcept {
         cleanup();
         return false;
     }
-    if (!SDL_ResumeAudioStreamDevice(stream_)) {
-        fail_sdl("SDL_ResumeAudioStreamDevice");
-        cleanup();
-        return false;
+    if (config.prime_on_start) {
+        // All terms are positive SDL ints. The product, ceil and small padding
+        // fit in uint64_t without narrowing even when the target exceeds the bound.
+        static_assert(std::numeric_limits<int>::digits <= 31);
+        const auto source_ticks = static_cast<std::uint64_t>(info_.device_buffer_frames) *
+            static_cast<std::uint64_t>(config.source_rate);
+        const auto rate = static_cast<std::uint64_t>(info_.device.freq);
+        prime_source_frames_ = source_ticks / rate + (source_ticks % rate != 0);
+        // SDL 3.4.2 holds up to seven source frames of right-hand resampler
+        // lookahead before flush. No lookahead is needed for matching rates.
+        if (source.freq != info_.stream_output.freq) prime_source_frames_ += 7;
+    } else {
+        if (!SDL_ResumeAudioStreamDevice(stream_)) {
+            fail_sdl("SDL_ResumeAudioStreamDevice");
+            cleanup();
+            return false;
+        }
+        paused_ = false;
     }
-    paused_ = false;
     if (!consume_removal()) {
         cleanup();
         return false;
@@ -271,7 +285,11 @@ SdlAudioOutput::Submit SdlAudioOutput::try_submit(std::span<const std::int16_t> 
     }
     std::size_t queued = 0;
     if (!queued_frames(queued) || !consume_removal()) return Submit::error;
-    if (frames > info_.max_queued_source_frames - queued) return Submit::would_block;
+    if (frames > info_.max_queued_source_frames - queued) {
+        // Let SDL make room when a whole block cannot fit before the target.
+        if (prime_source_frames_ && queued && !resume()) return Submit::error;
+        return Submit::would_block;
+    }
     // A single writer and asynchronous consumption make admission conservative.
     // The bound above also guarantees SDL's signed byte length cannot overflow.
     if (!SDL_PutAudioStreamData(stream_, samples.data(), static_cast<int>(frames * source_frame_bytes))) {
@@ -279,13 +297,16 @@ SdlAudioOutput::Submit SdlAudioOutput::try_submit(std::span<const std::int16_t> 
         return Submit::error;
     }
     accepted_source_frames_ += frames;
-    // Copy success remains success even if removal races afterward. The next
-    // owner operation consumes the latched endpoint failure; it is not hearing.
+    // The put committed; even if starting playback fails, returning error here
+    // would misreport acceptance of this block. Retain the failure for the next
+    // owner operation (as for removal racing a successful put).
+    if (prime_source_frames_ && queued + frames >= prime_source_frames_) resume();
     return Submit::accepted;
 }
 
 bool SdlAudioOutput::pause() noexcept {
     if (!require_stream("pause")) return false;
+    prime_source_frames_ = 0;
     if (!paused_) {
         if (!SDL_PauseAudioStreamDevice(stream_)) return fail_sdl("SDL_PauseAudioStreamDevice");
         paused_ = true;
@@ -295,6 +316,7 @@ bool SdlAudioOutput::pause() noexcept {
 
 bool SdlAudioOutput::resume() noexcept {
     if (!require_stream("resume")) return false;
+    prime_source_frames_ = 0;
     if (paused_) {
         if (!SDL_ResumeAudioStreamDevice(stream_)) return fail_sdl("SDL_ResumeAudioStreamDevice");
         paused_ = false;
@@ -307,6 +329,7 @@ bool SdlAudioOutput::finish_input() noexcept {
     if (state_ == State::draining || state_ == State::stream_drained) return true;
     if (!SDL_FlushAudioStream(stream_)) return fail_sdl("SDL_FlushAudioStream");
     state_ = State::draining;
+    if (prime_source_frames_) return resume();
     return consume_removal();
 }
 

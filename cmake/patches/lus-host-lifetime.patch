@@ -5,9 +5,9 @@ source snapshot. Hunks are generated from immutable git-object bytes at this pin
 with three lines of unified context, not from a mutable reference worktree.
 Ship::ControlDeck is the owning base of LUS::ControlDeck at this pin; its private
 Window/wheel/controller-bit caches therefore require the ship/controller paths.
-This patch adds explicit final-use cache release and safe SDL/OpenGL host teardown,
-not game behavior or general multi-context GUI support. Apply only to the freshly
-exported build-private snapshot, never to the reference checkout.
+This patch adapts final-use cache release, SDL/OpenGL teardown, fullscreen and
+opt-in aspect-fit presentation for the host. Apply only to the freshly exported
+build-private snapshot, never to the reference checkout.
 
 diff --git a/include/ship/window/gui/Gui.h b/include/ship/window/gui/Gui.h
 --- a/include/ship/window/gui/Gui.h
@@ -59,6 +59,192 @@ diff --git a/src/fast/Fast3dWindow.cpp b/src/fast/Fast3dWindow.cpp
      mInterpreter->Destroy();
      delete mRenderingApi;
      delete mWindowManagerApi;
+@@ -103,7 +105,7 @@
+     uint32_t width, height;
+     int32_t posX, posY;
+ 
+-    isFullscreen = GetConfig()->GetBool("Window.Fullscreen.Enabled", false) || gameMode;
++    isFullscreen = GetConfig()->GetBool("Window.Fullscreen.Enabled", gameMode);
+     posX = GetConfig()->GetInt("Window.PositionX", 100);
+     posY = GetConfig()->GetInt("Window.PositionY", 100);
+ 
+@@ -357,8 +359,11 @@
+ }
+ 
+ void Fast3dWindow::SetFullscreen(bool isFullscreen) {
+-    // Save current window position before fullscreening
+-    SaveWindowToConfig();
++    // SDL saves its own windowed geometry in logical coordinates.
++    if (GetWindowBackend() != WindowBackend::FAST3D_SDL_OPENGL &&
++        GetWindowBackend() != WindowBackend::FAST3D_SDL_METAL) {
++        SaveWindowToConfig();
++    }
+     mWindowManagerApi->SetFullscreen(isFullscreen);
+ }
+ 
+@@ -393,8 +398,9 @@
+     }
+ 
+     wnd->SetLastScancode(-1);
+-    return wnd->GetControlDeck()->ProcessKeyboardEvent(Ship::KbEventType::LUS_KB_EVENT_KEY_UP,
+-                                                       static_cast<Ship::KbScancode>(scancode));
++    auto deck = wnd->GetControlDeck();
++    return deck && deck->ProcessKeyboardEvent(Ship::KbEventType::LUS_KB_EVENT_KEY_UP,
++                                              static_cast<Ship::KbScancode>(scancode));
+ }
+ 
+ bool Fast3dWindow::KeyDown(int32_t scancode) {
+@@ -403,8 +409,9 @@
+         return false;
+     }
+ 
+-    bool isProcessed = wnd->GetControlDeck()->ProcessKeyboardEvent(Ship::KbEventType::LUS_KB_EVENT_KEY_DOWN,
+-                                                                   static_cast<Ship::KbScancode>(scancode));
++    auto deck = wnd->GetControlDeck();
++    bool isProcessed = deck && deck->ProcessKeyboardEvent(Ship::KbEventType::LUS_KB_EVENT_KEY_DOWN,
++                                                         static_cast<Ship::KbScancode>(scancode));
+     wnd->SetLastScancode(scancode);
+     return isProcessed;
+ }
+@@ -415,8 +422,11 @@
+         return;
+     }
+ 
+-    wnd->GetControlDeck()->ProcessKeyboardEvent(Ship::KbEventType::LUS_KB_EVENT_ALL_KEYS_UP,
+-                                                Ship::KbScancode::LUS_KB_UNKNOWN);
++    wnd->SetLastScancode(-1);
++    if (auto deck = wnd->GetControlDeck()) {
++        deck->ProcessKeyboardEvent(Ship::KbEventType::LUS_KB_EVENT_ALL_KEYS_UP,
++                                   Ship::KbScancode::LUS_KB_UNKNOWN);
++    }
+ }
+ 
+ bool Fast3dWindow::MouseButtonUp(int button) {
+@@ -425,7 +435,8 @@
+         return false;
+     }
+ 
+-    return wnd->GetControlDeck()->ProcessMouseButtonEvent(false, static_cast<Ship::MouseBtn>(button));
++    auto deck = wnd->GetControlDeck();
++    return deck && deck->ProcessMouseButtonEvent(false, static_cast<Ship::MouseBtn>(button));
+ }
+ 
+ bool Fast3dWindow::MouseButtonDown(int button) {
+@@ -434,7 +445,8 @@
+         return false;
+     }
+ 
+-    return wnd->GetControlDeck()->ProcessMouseButtonEvent(true, static_cast<Ship::MouseBtn>(button));
++    auto deck = wnd->GetControlDeck();
++    return deck && deck->ProcessMouseButtonEvent(true, static_cast<Ship::MouseBtn>(button));
+ }
+ 
+ void Fast3dWindow::OnFullscreenChanged(bool isNowFullscreen) {
+@@ -506,9 +518,6 @@
+             mControlDeck = context->GetChildren().GetFirst<Ship::ControlDeck>();
+         }
+     }
+-    if (mControlDeck == nullptr) {
+-        throw std::runtime_error("Component 'Window' requires dependency 'ControlDeck' to exist before use");
+-    }
+     return mControlDeck;
+ }
+ 
+diff --git a/include/fast/Fast3dWindow.h b/include/fast/Fast3dWindow.h
+--- a/include/fast/Fast3dWindow.h
++++ b/include/fast/Fast3dWindow.h
+@@ -134,6 +134,6 @@
+ 
+     /** @brief Returns the cached ConsoleVariable component after validating it is ready for use. */
+     std::shared_ptr<Ship::ConsoleVariable> GetConsoleVariables() const;
+-    /** @brief Returns the cached ControlDeck component after validating it is ready for use. */
++    /** @brief Returns the ControlDeck if controller input is enabled. */
+     std::shared_ptr<Ship::ControlDeck> GetControlDeck() const;
+ };
+diff --git a/include/fast/Fast3dGui.h b/include/fast/Fast3dGui.h
+--- a/include/fast/Fast3dGui.h
++++ b/include/fast/Fast3dGui.h
+@@ -142,6 +142,9 @@
+     void RefreshImGuiGamepads() override;
+ 
+   protected:
++    // Positive width/height opts into centered aspect-fit; zero keeps the existing scaling policy.
++    virtual float GetGameAspectRatio() const;
++
+     void ImGuiWMInit() override;
+     void ImGuiWMShutdown() override;
+     void ImGuiBackendInit() override;
+diff --git a/src/fast/Fast3dGui.cpp b/src/fast/Fast3dGui.cpp
+--- a/src/fast/Fast3dGui.cpp
++++ b/src/fast/Fast3dGui.cpp
+@@ -342,6 +342,29 @@
+     }
+ }
+ 
++namespace {
++struct GameImageRect {
++    ImVec2 offset;
++    ImVec2 size;
++};
++
++GameImageRect GetAspectFitRect(ImVec2 available, float aspect) {
++    available.x = available.x > 0.0f ? available.x : 0.0f;
++    available.y = available.y > 0.0f ? available.y : 0.0f;
++    ImVec2 size = available;
++    if (size.x > size.y * aspect) {
++        size.x = size.y * aspect;
++    } else {
++        size.y = size.x / aspect;
++    }
++    return { ImVec2((available.x - size.x) * 0.5f, (available.y - size.y) * 0.5f), size };
++}
++} // namespace
++
++float Fast3dGui::GetGameAspectRatio() const {
++    return 0.0f;
++}
++
+ void Fast3dGui::CalculateGameViewport() {
+     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+@@ -354,10 +377,18 @@
+     ImGui::PopStyleVar(3);
+     ImGui::PopStyleColor();
+ 
+-    ImVec2 mainPos = ImGui::GetWindowPos();
++    const float aspect = GetGameAspectRatio();
++    ImVec2 mainPos = aspect > 0.0f ? ImGui::GetCursorScreenPos() : ImGui::GetWindowPos();
+     mainPos.x -= mTemporaryWindowPos.x;
+     mainPos.y -= mTemporaryWindowPos.y;
+     ImVec2 size = ImGui::GetContentRegionAvail();
++    if (aspect > 0.0f) {
++        const auto rect = GetAspectFitRect(size, aspect);
++        mainPos.x += rect.offset.x;
++        mainPos.y += rect.offset.y;
++        size = rect.size;
++    }
++
+     mInterpreter.lock()->mCurDimensions.width = (uint32_t)(size.x * mInterpreter.lock()->mCurDimensions.internal_mul);
+     mInterpreter.lock()->mCurDimensions.height = (uint32_t)(size.y * mInterpreter.lock()->mCurDimensions.internal_mul);
+     mInterpreter.lock()->mGameWindowViewport.x = (int16_t)mainPos.x;
+@@ -410,10 +441,15 @@
+ 
+     GetGameOverlay()->Draw();
+ 
+-    ImVec2 mainPos = ImGui::GetWindowPos();
+     ImVec2 size = ImGui::GetContentRegionAvail();
+     ImVec2 pos = ImVec2(0, 0);
+-    if (mConsoleVariables->GetInteger(CVAR_LOW_RES_MODE, 0) == 1) { // N64 Mode takes priority
++    const float aspect = GetGameAspectRatio();
++    if (aspect > 0.0f) {
++        const auto rect = GetAspectFitRect(size, aspect);
++        const ImVec2 origin = ImGui::GetCursorPos();
++        pos = ImVec2(origin.x + rect.offset.x, origin.y + rect.offset.y);
++        size = rect.size;
++    } else if (mConsoleVariables->GetInteger(CVAR_LOW_RES_MODE, 0) == 1) { // N64 Mode takes priority
+         const float sw = size.y * 320.0f / 240.0f;
+         pos = ImVec2(floor(size.x / 2 - sw / 2), 0);
+         size = ImVec2(sw, size.y);
 diff --git a/include/ship/controller/controldeck/ControlDeck.h b/include/ship/controller/controldeck/ControlDeck.h
 --- a/include/ship/controller/controldeck/ControlDeck.h
 +++ b/include/ship/controller/controldeck/ControlDeck.h
@@ -182,6 +368,36 @@ diff --git a/src/fast/backends/gfx_opengl.cpp b/src/fast/backends/gfx_opengl.cpp
  }
  
  int GfxRenderingAPIOGL::GetMaxTextureSize() {
+diff --git a/include/fast/backends/gfx_sdl.h b/include/fast/backends/gfx_sdl.h
+--- a/include/fast/backends/gfx_sdl.h
++++ b/include/fast/backends/gfx_sdl.h
+@@ -1,5 +1,7 @@
+ #pragma once
+ 
++#include <SDL3/SDL_scancode.h>
++#include <bitset>
+ #include <memory>
+ #include "gfx_window_manager_api.h"
+ 
+@@ -65,6 +67,8 @@
+     /** @} */
+   private:
+     void SetFullscreenImpl(bool on, bool call_callback);
++    void UpdateFullscreenState(bool call_callback);
++    void UpdateMouseClip(bool capture);
+     void HandleSingleEvent(SDL_Event& event);
+     int TranslateScancode(int scancode) const;
+     int UntranslateScancode(int translatedScancode) const;
+@@ -87,7 +91,8 @@
+     // OTRTODO: These are redundant. Info can be queried from SDL.
+     int mWindowWidth = 640;
+     int mWindowHeight = 480;
+-    void (*mOnAllKeysUp)();
++    void (*mOnAllKeysUp)() = nullptr;
++    std::bitset<SDL_SCANCODE_COUNT> mPressedKeys;
+ 
+     std::shared_ptr<Ship::ConsoleVariable> mConsoleVariable;
+     std::shared_ptr<Ship::Config> mConfig;
 diff --git a/src/fast/backends/gfx_sdl.cpp b/src/fast/backends/gfx_sdl.cpp
 --- a/src/fast/backends/gfx_sdl.cpp
 +++ b/src/fast/backends/gfx_sdl.cpp
@@ -192,7 +408,128 @@ diff --git a/src/fast/backends/gfx_sdl.cpp b/src/fast/backends/gfx_sdl.cpp
  
  #if defined(ENABLE_OPENGL) || defined(__APPLE__)
  
-@@ -336,7 +337,7 @@
+@@ -27,7 +28,6 @@
+ #elif __APPLE__
+ #include <SDL3/SDL.h>
+ #include "fast/backends/gfx_metal.h"
+-#include "ship/utils/macUtils.h"
+ #else
+ #include <SDL3/SDL.h>
+ #define GL_GLEXT_PROTOTYPES 1
+@@ -218,73 +218,67 @@
+ GfxWindowBackendSDL::~GfxWindowBackendSDL() {
+ }
+ 
+ void GfxWindowBackendSDL::SetFullscreenImpl(bool on, bool call_callback) {
+-    if (mFullScreen == on) {
++    UpdateFullscreenState(call_callback);
++    if (IsFullscreen() == on) {
+         return;
+     }
+ 
+-    SDL_DisplayID display_in_use = SDL_GetDisplayForWindow(mWnd);
+-    if (display_in_use == 0) {
+-        SPDLOG_WARN("Can't detect on which monitor we are. Probably out of display area?");
+-        SPDLOG_WARN(SDL_GetError());
+-    }
+-
+     if (on) {
+-        // OTRTODO: Get mode from config.
+         const bool windowedFullscreen = mConsoleVariable->GetInteger(CVAR_SDL_WINDOWED_FULLSCREEN, 0) != 0;
+         SDL_DisplayMode fullscreenMode{};
+         const SDL_DisplayMode* mode = nullptr;
+ 
+         if (!windowedFullscreen) {
++            const SDL_DisplayID display_in_use = SDL_GetDisplayForWindow(mWnd);
+             const SDL_DisplayMode* desktopMode = SDL_GetDesktopDisplayMode(display_in_use);
+             if (desktopMode == nullptr ||
+                 !SDL_GetClosestFullscreenDisplayMode(display_in_use, desktopMode->w, desktopMode->h,
+                                                      desktopMode->refresh_rate, true, &fullscreenMode)) {
+                 SPDLOG_ERROR("Failed to find an exclusive fullscreen mode.");
+                 SPDLOG_ERROR(SDL_GetError());
+             } else {
+                 mode = &fullscreenMode;
+             }
+         }
+ 
+         if (!SDL_SetWindowFullscreenMode(mWnd, mode)) {
+-            SPDLOG_ERROR("Failed to set the fullscreen display mode.");
+-            SPDLOG_ERROR(SDL_GetError());
++            throw std::runtime_error(std::string("SDL fullscreen display mode failed: ") + SDL_GetError());
++        }
++
++        if (call_callback) {
++            // Save logical windowed bounds for a later launch. For this window,
++            // SDL restores its windowed placement (including maximized state).
++            int width, height, x, y;
++            if (SDL_GetWindowSize(mWnd, &width, &height)) {
++                mConfig->SetInt("Window.Width", width);
++                mConfig->SetInt("Window.Height", height);
++            }
++            if (SDL_GetWindowPosition(mWnd, &x, &y)) {
++                mConfig->SetInt("Window.PositionX", x);
++                mConfig->SetInt("Window.PositionY", y);
++            }
+         }
+     }
+ 
+-#if defined(__APPLE__)
+-    // Implement fullscreening with native macOS APIs
+-    if (on != isNativeMacOSFullscreenActive(mWnd)) {
+-        toggleNativeMacOSFullscreen(mWnd);
+-    }
+-    mFullScreen = on;
+-#else
+-    if (SDL_SetWindowFullscreen(mWnd, on)) {
+-        mFullScreen = on;
+-    } else {
+-        SPDLOG_ERROR("Failed to switch from or to fullscreen mode.");
+-        SPDLOG_ERROR(SDL_GetError());
++    if (!SDL_SetWindowFullscreen(mWnd, on) || !SDL_SyncWindow(mWnd)) {
++        throw std::runtime_error(std::string("SDL fullscreen transition failed: ") + SDL_GetError());
+     }
+-#endif
+-
+-    if (!on) {
+-        mWindowWidth = mConfig->GetInt("Window.Width", 640);
+-        mWindowHeight = mConfig->GetInt("Window.Height", 480);
+-        int32_t posX = mConfig->GetInt("Window.PositionX", 100);
+-        int32_t posY = mConfig->GetInt("Window.PositionY", 100);
+-        if (display_in_use == 0) { // Fallback to default if out of bounds
+-            posX = 100;
+-            posY = 100;
+-        }
+-        SDL_SetWindowPosition(mWnd, posX, posY);
+-        SDL_SetWindowSize(mWnd, mWindowWidth, mWindowHeight);
++    UpdateFullscreenState(call_callback);
++    if (IsFullscreen() != on) {
++        throw std::runtime_error("SDL window manager did not apply the fullscreen transition");
+     }
++}
+ 
+-    if (mOnFullscreenChanged != nullptr && call_callback) {
+-        mOnFullscreenChanged(on);
++void GfxWindowBackendSDL::UpdateFullscreenState(bool call_callback) {
++    const bool fullscreen = IsFullscreen();
++    if (mFullScreen != fullscreen) {
++        mFullScreen = fullscreen;
++        if (call_callback && mOnFullscreenChanged != nullptr) {
++            mOnFullscreenChanged(fullscreen);
++        }
+     }
+ }
+ 
+ void GfxWindowBackendSDL::GetActiveWindowRefreshRate(uint32_t* refresh_rate) {
+     SDL_DisplayID display_in_use = SDL_GetDisplayForWindow(mWnd);
+@@ -332,11 +326,13 @@
+ void GfxWindowBackendSDL::Init(const char* gameName, const char* gfxApiName, bool startFullScreen, uint32_t width,
+                                uint32_t height, int32_t posX, int32_t posY) {
+-    mWindowWidth = width;
+-    mWindowHeight = height;
++    // Even fullscreen startup needs a windowed restore rectangle.
++    mWindowWidth = startFullScreen ? mConfig->GetInt("Window.Width", 640) : width;
++    mWindowHeight = startFullScreen ? mConfig->GetInt("Window.Height", 480) : height;
++    mFullScreen = false;
  
      if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
          SPDLOG_ERROR("SDL video initialization failed: {}", SDL_GetError());
@@ -201,7 +538,7 @@ diff --git a/src/fast/backends/gfx_sdl.cpp b/src/fast/backends/gfx_sdl.cpp
      }
  
      SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
-@@ -406,7 +407,7 @@
+@@ -406,7 +402,7 @@
      SDL_DestroyProperties(windowProperties);
      if (mWnd == nullptr) {
          SPDLOG_ERROR("Error creating SDL window: {}", SDL_GetError());
@@ -210,7 +547,7 @@ diff --git a/src/fast/backends/gfx_sdl.cpp b/src/fast/backends/gfx_sdl.cpp
      }
  #ifdef _WIN32
      // Get Windows window handle and use it to subclass the window procedure.
-@@ -432,8 +433,9 @@
+@@ -432,8 +428,9 @@
          }
  
          mCtx = SDL_GL_CreateContext(mWnd);
@@ -222,3 +559,110 @@ diff --git a/src/fast/backends/gfx_sdl.cpp b/src/fast/backends/gfx_sdl.cpp
          SDL_GL_SetSwapInterval(mVsyncEnabled ? 1 : 0);
  
          window_impl.Opengl = { mWnd, mCtx };
+@@ -520,6 +517,10 @@
+ 
+ void GfxWindowBackendSDL::SetMouseCapture(bool capture) {
+     SDL_SetWindowRelativeMouseMode(mWnd, capture);
++    UpdateMouseClip(capture);
++}
++
++void GfxWindowBackendSDL::UpdateMouseClip(bool capture) {
+     // Keep the cursor fixed while captured. Relative mode alone constrains it to
+     // the window, but does not preserve the centering behavior expected here.
+     const SDL_Rect* cursorClip = nullptr;
+@@ -636,26 +637,62 @@
+     } else {
+         SPDLOG_ERROR("gfx_sdl: Gui is not a Fast3dGui; cannot dispatch window event");
+     }
++    const auto windowID = SDL_GetWindowID(mWnd);
+     switch (event.type) {
+ #ifndef TARGET_WEB
+         // Scancodes are broken in Emscripten SDL2: https://bugzilla.libsdl.org/show_bug.cgi?id=3259
+         case SDL_EVENT_KEY_DOWN:
+-            OnKeydown(event.key.scancode);
++            if (event.key.windowID == windowID && event.key.scancode > SDL_SCANCODE_UNKNOWN &&
++                event.key.scancode < SDL_SCANCODE_COUNT) {
++                if (!event.key.repeat) {
++                    mPressedKeys.set(event.key.scancode);
++                }
++                if (mPressedKeys.test(event.key.scancode)) {
++                    OnKeydown(event.key.scancode);
++                }
++            }
+             break;
+         case SDL_EVENT_KEY_UP:
+-            OnKeyup(event.key.scancode);
++            if (event.key.windowID == windowID && !event.key.repeat && SDL_GetKeyboardFocus() == mWnd &&
++                event.key.scancode > SDL_SCANCODE_UNKNOWN && event.key.scancode < SDL_SCANCODE_COUNT &&
++                mPressedKeys.test(event.key.scancode)) {
++                mPressedKeys.reset(event.key.scancode);
++                OnKeyup(event.key.scancode);
++            }
+             break;
+         case SDL_EVENT_MOUSE_BUTTON_DOWN:
+-            OnMouseButtonDown(event.button.button - 1);
++            if (event.button.windowID == windowID) {
++                OnMouseButtonDown(event.button.button - 1);
++            }
+             break;
+         case SDL_EVENT_MOUSE_BUTTON_UP:
+-            OnMouseButtonUp(event.button.button - 1);
++            if (event.button.windowID == windowID) {
++                OnMouseButtonUp(event.button.button - 1);
++            }
+             break;
+         case SDL_EVENT_MOUSE_WHEEL:
+-            mMouseWheelX = event.wheel.x;
+-            mMouseWheelY = event.wheel.y;
++            if (event.wheel.windowID == windowID) {
++                mMouseWheelX = event.wheel.x;
++                mMouseWheelY = event.wheel.y;
++            }
+             break;
+ #endif
++        case SDL_EVENT_WINDOW_FOCUS_LOST:
++            if (event.window.windowID == windowID) {
++                mPressedKeys.reset();
++                if (mOnAllKeysUp != nullptr) {
++                    mOnAllKeysUp();
++                }
++            }
++            break;
++        case SDL_EVENT_WINDOW_RESIZED:
++            if (event.window.windowID == windowID && IsMouseCaptured()) {
++                UpdateMouseClip(true);
++            }
++            break;
+         case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
++            if (event.window.windowID != windowID) {
++                break;
++            }
+ #ifdef __APPLE__
+             SDL_GetWindowSize(mWnd, &mWindowWidth, &mWindowHeight);
+@@ -689,16 +726,7 @@
+         HandleSingleEvent(event);
+     }
+ 
+-    // resync fullscreen state
+-#ifdef __APPLE__
+-    auto nextFullscreenState = isNativeMacOSFullscreenActive(mWnd);
+-    if (mFullScreen != nextFullscreenState) {
+-        mFullScreen = nextFullscreenState;
+-        if (mOnFullscreenChanged != nullptr) {
+-            mOnFullscreenChanged(mFullScreen);
+-        }
+-    }
+-#endif
++    UpdateFullscreenState(true);
+ }
+ 
+ bool GfxWindowBackendSDL::IsFrameReady() {
+@@ -814,7 +842,7 @@
+ }
+ 
+ bool GfxWindowBackendSDL::IsFullscreen() {
+-    return mFullScreen;
++    return (SDL_GetWindowFlags(mWnd) & SDL_WINDOW_FULLSCREEN) != 0;
+ }
+ } // namespace Fast
+ #endif

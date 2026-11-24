@@ -33,6 +33,30 @@ selection, default migration and explicit-device removal. Windows physical
 routing, hearing and provisioned gameplay remain unqualified. See the
 [exact-source packaging receipt](development/admission/RUNTIME_PACKAGING.md#preview9-feedback-corrections-and-public-delivery).
 
+### Current source build (not Runtime preview 9)
+
+The published preview 9 archives are unchanged. In the current source build,
+GAME services one borrowed SDL stream independently of main's video and input
+work; main still opens and closes the stream. The complete local Clang
+ASan/UBSan CPU CTest suite passed **65/65**. A separate rendered ASan experiment
+with corrected Mesa reported **112 bytes** attributed by the process's own
+loader mapping to `libgallium` (`bd_35mmIsle-b3o`); it was not clean.
+
+The source-built stock GNU product passed the F11, CLI fullscreen and restart
+checks on Xvfb with Openbox, including **1280×720** fullscreen with **160 px**
+black side bars on each side, restored **1000×482** and **500×608** windows
+with actual 4:3 bars, and five ordinary exit-0 closes. A private **48 kHz**
+Pulse monitor showed nonzero samples in sampled intervals before, during
+and after fullscreen, not continuous dropout-free playback, scene identity,
+physical sound or DAC timing. The
+[owner and private audio checks](development/admission/GAME_OWNER.md#current-source-build-audio-and-desktop-checks)
+cover the title cue, all 37 catalog entries and focused Volcano music
+registration/restoration—not a complete course, post-course or Save run.
+Neither these checks nor the desktop run qualify Original numeric or
+physical parity or current Windows gameplay.
+
+### Campaign and fidelity evidence
+
 The campaign and fidelity evidence below is historical, not qualification of
 preview 9. Windows 11 provisioned acceptance remains
 deferred; the user's observed failure is retained as negative product evidence.

@@ -4,6 +4,7 @@
 // The diagnostic-disabled Host supplies NO controller; SoftwareController below
 // is a separate, explicitly owned acquisition through the real Input Service.
 // CLI modes: ingress, course, campaign-lapras, native0..native6[-oak-cancel], native2-apple,
+// native2-music follows native2 through Volcano's music restoration, then cancels.
 // Preserved-input private modes: campaign-resume-{river,volcano} INPUT_PROFILE_DIRECTORY
 // perform one legally unlocked ride; River additionally requires its missing objective.
 // native5-empty, menus and credits17..credits19. Photographed courses normally
@@ -245,6 +246,9 @@ struct Evidence {
     unsigned lapras_report_stages=0;
     std::uint64_t course_updates=0,course_frames=0,course_presentations=0;
     bool authored_course_profile=false,course_api_completed=false;
+    bool volcano_music_only=false,volcano_music_cancel=false;
+    std::uint64_t volcano_restored_update=0,volcano_request_epoch=0,volcano_control_epoch=0,volcano_synthesis_epoch=0;
+    std::uint64_t volcano_pcm_floor=0,volcano_pcm_after_synthesis=0;
     bool native_fail_live=false,native_failure_triggered=false;
     std::uint64_t native_failure_entry=0;
     IsleGameResult close_runtime_error=ISLE_GAME_OK;
@@ -259,6 +263,7 @@ struct Evidence {
     bool boot_wait = false,boot_complete = false,menu_result = false,name_confirming = false,name_confirmed = false;
     bool oak_result = false,frame_hold = false,stop_while_held = false,native_retired = false,input_stopped = false;
     bool audio_drained = false,host_released = false,main_music = false;
+    bool audio_retired=false;
     bool native_retirement_deadline = false;
 };
 struct MagikarpCopyCall {
@@ -407,7 +412,7 @@ bool continuous_campaign(const Evidence& e) noexcept {
     return e.full_campaign || e.campaign_retained || e.campaign_empty || e.saved_input;
 }
 bool post_course_mode(const Evidence& e) noexcept {
-    return e.mode==Mode::course || (e.mode==Mode::native_course && !e.empty_course);
+    return e.mode==Mode::course || (e.mode==Mode::native_course && !e.empty_course && !e.volcano_music_only);
 }
 bool native_course_operation(IsleApplicationEntryOperation operation) noexcept {
     switch(operation) {
@@ -446,6 +451,7 @@ void observe_retirement(void* user,app::SceneRetirementView view) noexcept {
     if (evidence.mode==Mode::native_course && evidence.course_probe && view.entry &&
         native_course_operation(view.entry->operation)) {
         try {
+            require(!evidence.volcano_music_only,"Volcano retired naturally before the focused music cancellation");
             if(evidence.capture_goal==isle::private_course::CaptureGoal::apple_evolution) {
                 require(evidence.apple_profile,"native2-apple retirement lost its canonical profile owner");
                 observe_apple_gear(evidence,*evidence.apple_profile,1);
@@ -712,6 +718,16 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
             <<" actual_saved_known="<<e.natural_known<<" actual_saved_unlocked="<<e.natural_unlocked
             <<" input_only_course_objective="<<static_cast<int>(e.capture_goal)
             <<" actual_course_LUS_presentations="<<e.course_presentations<<'\n';
+        if(e.volcano_music_only)
+            out<<"private_qualification=native2-music\n"
+                <<"Volcano_armed_without_song_registered6_Player_restored6="<<(e.volcano_restored_update!=0)
+                <<" restored_update="<<e.volcano_restored_update
+                <<" request_audio_epoch="<<e.volcano_request_epoch
+                <<" later_synthesis_epoch="<<e.volcano_synthesis_epoch
+                <<" accepted_frames_after_synthesis="<<e.volcano_pcm_after_synthesis
+                <<" normal_cancellation_requested="<<e.volcano_music_cancel
+                <<"\nGame_Audio_RSP_retired="<<e.audio_retired
+                <<"\nnatural_course_post_course_Save_completion=NOT_claimed\n";
         if(e.capture_goal==isle::private_course::CaptureGoal::lapras_photographs)
             out<<"private_qualification=campaign-lapras\n"
                 <<"Lapras_origin=UNSEEDED_actual_Name_NO_authored_progress_or_gear\n"
@@ -1126,7 +1142,8 @@ public:
     }
     void run() try {
         open_course_log();
-        timeline_.progress.set_deadline(Time::now()+std::chrono::seconds(e_.full_campaign?86400:e_.mode==Mode::course?7200:1800),
+        timeline_.progress.set_deadline(Time::now()+std::chrono::seconds(
+            e_.volcano_music_only?240:e_.full_campaign?86400:e_.mode==Mode::course?7200:1800),
             "actual application wall deadline expired; no scene completion claimed");
         while (!stop_requested_) {
             require(!timeline_.progress.deadline_expired(),"actual application wall deadline expired; no scene completion claimed");
@@ -1165,6 +1182,7 @@ public:
             }
             e_.main_music|=timeline_.audio.session().bgm_playing(0);
             require(!application_.stopped(),"Runtime stopped before real Beach ingress/consumer shutdown request");
+            if(e_.volcano_music_only && e_.volcano_restored_update) finish_volcano_music();
             (void)timeline_.progress.idle();
         }
         if(e_.saved_input) {
@@ -1243,6 +1261,14 @@ public:
                 require(e_.updates[n] && e_.frames[n] && e_.presentations[n],
                     "empty-flow isolation lost genuine Boot/Title/Name/first Oak ingress");
             validate_saved_continuation();
+            return;
+        }
+        if(e_.volcano_music_only) {
+            require(e_.volcano_music_cancel && course_probe_->volcano_music_restored() &&
+                e_.volcano_pcm_after_synthesis>0 && e_.entries==5 && !e_.course_api_completed &&
+                e_.authored_course_profile && e_.oak_result && e_.course_frames>0 && e_.course_presentations>0 &&
+                e_.boot_complete && e_.menu_result && e_.name_confirmed,
+                "focused Volcano proof lacks genuine ingress, all three music stages or downstream audio progress");
             return;
         }
         if (e_.mode==Mode::native_course) {
@@ -2811,12 +2837,42 @@ private:
             }
         }
     }
+    void finish_volcano_music() {
+        const auto view=application_.view();
+        require(view.volcano && view.entry && view.entry->serial==course_epoch_ && !clock_.stopping() && !clock_.stopped(),
+            "Volcano owner stopped before the focused music predicate");
+        const auto& session=timeline_.audio.session();
+        const auto accepted=session.accepted_frames();
+        const auto epoch=session.source_frame_epoch();
+        if(!e_.volcano_control_epoch) {
+            if(epoch!=e_.volcano_request_epoch)e_.volcano_control_epoch=epoch;
+            return;
+        }
+        if(!e_.volcano_synthesis_epoch) {
+            if(epoch==e_.volcano_control_epoch)return;
+            // GAME advances song controls after building. Wait for a further
+            // build, then exclude all PCM accepted before observing that build.
+            e_.volcano_synthesis_epoch=epoch;
+            e_.volcano_pcm_floor=accepted;
+            return;
+        }
+        if(accepted<=e_.volcano_pcm_floor)return;
+        e_.volcano_pcm_after_synthesis=accepted-e_.volcano_pcm_floor;
+        // The Runtime pump and frame consumer have returned. Leave the live
+        // course to the ordinary close_application cancellation path.
+        e_.volcano_music_cancel=true;
+        stop_requested_=true;
+    }
     void observe_update() {
         if (scene_>=scene_count) {
             const auto view=application_.view();
             if (e_.mode==Mode::native_course && view.entry && native_course_operation(view.entry->operation)) {
                 ++e_.course_updates;
                 course_probe_->update(view,e_.course_updates);
+                if(e_.volcano_music_only && !e_.volcano_restored_update && course_probe_->volcano_music_restored()) {
+                    e_.volcano_restored_update=e_.course_updates;
+                    e_.volcano_request_epoch=timeline_.audio.session().source_frame_epoch();
+                }
                 return;
             }
             if (menu_mode(e_.mode)) {
@@ -3342,7 +3398,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
         bool emptyCourse,bool returnedOakCancel,bool campaignFirstUnlock,isle::private_course::CaptureGoal captureGoal,
         bool fullCampaign,bool campaignRetained,bool nativeFailLive,bool campaignEmpty,
         const std::filesystem::path& inputProfile,bool resumeOne,bool resumeRiver,bool resumeVolcano,
-        std::int32_t resumeExplicitCourse) {
+        std::int32_t resumeExplicitCourse,bool volcanoMusicOnly) {
     for (const auto* name:{"SDL_AUDIO_DRIVER","SDL_AUDIODRIVER"}) {
         const char* value=std::getenv(name);
         require(value && std::string_view(value)=="dummy","private consumer requires both explicit SDL dummy audio variables");
@@ -3361,6 +3417,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     evidence.campaign_retained=campaignRetained;
     evidence.campaign_empty=campaignEmpty;
     evidence.native_fail_live=nativeFailLive;
+    evidence.volcano_music_only=volcanoMusicOnly;
     evidence.capture_goal=captureGoal;
     evidence.resume_river=resumeRiver;evidence.resume_volcano=resumeVolcano;
     evidence.resume_explicit_course=resumeExplicitCourse;
@@ -3452,7 +3509,8 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
         remember_failure(failure,diagnostic[0]?diagnostic:"actual SDL/native Audio stop/drain deadline or failure");
     }
     evidence.accepted_pcm=audio.session().accepted_frames();
-    if (!audio.retire()) remember_failure(failure,audio.message());
+    evidence.audio_retired=audio.retire();
+    if (!evidence.audio_retired) remember_failure(failure,audio.message());
     const auto closed=host.shutdown();
     evidence.host_released=!closed.failed && closed.owners_released &&
         closed.audio==isle::audio::SdlAudioOutput::CloseDisposition::stream_drained;
@@ -3460,6 +3518,10 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     if (!evidence.input_stopped || evidence.accepted_pcm==0 || evidence.submissions!=evidence.terminals ||
         evidence.released_frames!=evidence.submissions || evidence.read_requests!=evidence.read_completions)
         remember_failure(failure,"actual final frame/input/Audio ownership ledger did not balance");
+    if(evidence.volcano_music_only && failure.empty() &&
+        (!evidence.volcano_music_cancel || !evidence.native_retired || !evidence.input_stopped ||
+         !evidence.audio_drained || !evidence.audio_retired || !evidence.host_released))
+        remember_failure(failure,"focused Volcano proof requires complete Game/Input/RSP/SDL/Host retirement");
     if(post_course_mode(evidence) && !evidence.returned_oak_cancel && failure.empty()) {
         try {
             require(evidence.post.oak_saved && bool(evidence.post.committed),"actual durable save snapshot missing");
@@ -3527,6 +3589,14 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
         std::cout<<"private_native_Beach_local_definition_Actor129_model_Owner_current_block_postcopy=passed"
             <<" real_native_GPU_Input_Audio_Host_retirement=passed"
             <<" fixture=NOT_gameplay_NOT_qualification"
+            <<" private_report=proof/application-runtime-report.txt\n";
+        return 0;
+    }
+    if(evidence.volcano_music_only) {
+        std::cout<<"native2-music=passed Volcano_armed_without_song_registered6_Player_restored6=passed"
+            <<" restored_update="<<evidence.volcano_restored_update
+            <<" accepted_frames_after_synthesis="<<evidence.volcano_pcm_after_synthesis
+            <<" Game_Input_RSP_SDL_Host_retired=passed natural_course_post_course_Save_completion=not_claimed"
             <<" private_report=proof/application-runtime-report.txt\n";
         return 0;
     }
@@ -3602,7 +3672,7 @@ int main(int argc,char** argv) {
 #endif
     try {
         require(argc==3 || argc==4 || argc==5 || argc==6,
-            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|beach-magikarp-local-copy|campaign|replay-stop|campaign-retained|campaign-first-unlock|campaign-lapras|native3-empty-campaign|native0..native6[-oak-cancel]|native2-apple|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] or PRIVATE_ROM NEW_OWNED_ROOT campaign-resume[-one|-river|-volcano] INPUT_PROFILE_DIRECTORY; only campaign-resume-one accepts optional final COURSE digit 0..6 (existing empty absolute nonsymlink private directory)");
+            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|beach-magikarp-local-copy|campaign|replay-stop|campaign-retained|campaign-first-unlock|campaign-lapras|native3-empty-campaign|native0..native6[-oak-cancel]|native2-apple|native2-music|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] or PRIVATE_ROM NEW_OWNED_ROOT campaign-resume[-one|-river|-volcano] INPUT_PROFILE_DIRECTORY; only campaign-resume-one accepts optional final COURSE digit 0..6 (existing empty absolute nonsymlink private directory)");
 #ifdef _WIN32
         if (argc == 4 && std::wstring_view(argv[3]) == L"campaign")
 #else
@@ -3624,6 +3694,7 @@ int main(int argc,char** argv) {
         bool campaignRetained=false;
         bool campaignEmpty=false;
         bool nativeFailLive=false;
+        bool volcanoMusicOnly=false;
         bool resumeOne=false;
         bool resumeRiver=false;
         bool resumeVolcano=false;
@@ -3660,14 +3731,18 @@ int main(int argc,char** argv) {
             const bool sign=name.size()==12 && name.compare(0,6,"native")==0 && name[6]>='0' &&
                 name[6]<='5' && name.compare(7,5,"-sign")==0;
             const bool apple=name=="native2-apple";
+            volcanoMusicOnly=name=="native2-music";
             if(event)captureGoal=isle::private_course::CaptureGoal::progression;
             else if(sign)captureGoal=isle::private_course::CaptureGoal::sign;
             else if(apple)captureGoal=isle::private_course::CaptureGoal::apple_evolution;
             else if(name=="campaign-lapras")captureGoal=isle::private_course::CaptureGoal::lapras_photographs;
-            require(native || event || sign || apple || emptyCourse || returnedOakCancel || nativeFailLive || campaignFirstUnlock || fullCampaign || campaignRetained || campaignEmpty || resume ||
+            require(native || event || sign || apple || volcanoMusicOnly || emptyCourse || returnedOakCancel ||
+                nativeFailLive || campaignFirstUnlock || fullCampaign || campaignRetained || campaignEmpty || resume ||
                 name=="ingress" || name=="course" || name=="beach-magikarp-local-copy" || name=="menus" ||
                 name=="credits17" || name=="credits18" || name=="credits19","unknown actual Runtime qualification/regression mode");
-            if(native || event || sign || apple || emptyCourse || returnedOakCancel || nativeFailLive || campaignEmpty){mode=Mode::native_course;requestedCourse=emptyCourse?5:name[6]-'0';}
+            if(native || event || sign || apple || volcanoMusicOnly || emptyCourse || returnedOakCancel || nativeFailLive || campaignEmpty) {
+                mode=Mode::native_course;requestedCourse=emptyCourse?5:name[6]-'0';
+            }
             else if(campaignFirstUnlock || fullCampaign || campaignRetained || resume)mode=Mode::native_course;
             else if (name=="course") mode=Mode::course;
             else if (name=="beach-magikarp-local-copy") mode=Mode::beach_magikarp_local_copy;
@@ -3678,7 +3753,7 @@ int main(int argc,char** argv) {
         }
         return run(std::filesystem::path(argv[1]),std::filesystem::path(argv[2]),mode,requestedCourse,emptyCourse,
             returnedOakCancel,campaignFirstUnlock,captureGoal,fullCampaign,campaignRetained,nativeFailLive,campaignEmpty,
-            inputProfile,resumeOne,resumeRiver,resumeVolcano,resumeExplicitCourse);
+            inputProfile,resumeOne,resumeRiver,resumeVolcano,resumeExplicitCourse,volcanoMusicOnly);
     } catch (const std::exception& error) {
         std::cerr << "private actual application integration: " << error.what() << '\n';return 1;
     } catch (...) {

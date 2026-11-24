@@ -2,7 +2,7 @@
   "schema_version": 1,
   "provider": "volcano-actor",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "transformation_version": "volcano-complete312-typed-v2",
+  "transformation_version": "volcano-complete312-typed-v3",
   "source_files": {
     "src/volcano/arcanine/anim/material/eat.c": {
       "git_blob": "d05c3c389f3df81ff831792e287c80bc339bd34b",
@@ -11281,7 +11281,7 @@
       "first": 14,
       "last": 123,
       "source_sha256": "f7a75ceb29ef0aaec4a89622bc85808dd11d760318ca56ed2ee87b606429661b",
-      "native_sha256": "91f0d834bff18946cb6441dfa73486aa089f5608ac990474cd07a59ea5086628",
+      "native_sha256": "211c8229652700f116a716ffc4ee75ccafa28f8512208011504c6e123dadb247",
       "source_declaration": "void volcano_UpdateSounds(s32 blockCount, f32 blockPart)",
       "native_declaration": "void volcano_UpdateSounds(IsleVolcanoActorSource* s, int32_t blockCount, float blockPart)",
       "changes": [
@@ -11660,7 +11660,7 @@
               "start": 504,
               "end": 523,
               "find": "setBackgroundMusic(",
-              "replace": "isle_volcano_actor_bgm_play(s, "
+              "replace": "isle_volcano_actor_background_music(s, "
             }
           ]
         }
@@ -54897,10 +54897,10 @@
   ],
   "native_support": {
     "src/volcano_actor_source.h": {
-      "sha256": "f9ff03930bc55d8fcd61c345e601e5c19d2951042e10e6add6b84426eda03f29"
+      "sha256": "5e75a1f182982c325b3b424a194f4e91f5e3aca7fd6d5b4023df3e7513ace00f"
     },
     "src/volcano_actor_source.c": {
-      "sha256": "02ee285123a85d92ca87ce255c9580d54362ac3a9270ef606e9e9191d639bce8"
+      "sha256": "14ae91fb96762f5d1cacab77ec9fd10426eb64677715c848c43f593ff6b2c0d7"
     },
     "src/volcano_actor.hpp": {
       "sha256": "49d2e0fd300cb959c2be873807bd062fed754e2645f21a9469c515ed1fd5a020"
@@ -54921,6 +54921,6 @@
       "sha256": "e6fbef2ed7f926d64e5f0492dbac2ec25ed15636c51706b7a44d8b95c552e24e"
     }
   },
-  "output_sha256": "5174afc2a0ab62c50549809b72a0cc3e013fb4b663980d4e06d71b3e444cc1bb",
-  "generator_sha256": "ec8548dccf1f01e13304238dc8389c50c0cb0016f6e2c57784b30e8e7adebc7a"
+  "output_sha256": "6f1c929f37b6c0706309014e5cd98b717ad640464b2408c69fbaf76b44622775",
+  "generator_sha256": "01ef494022d559432e092fdaaa5a53f73ae9cf7a3a2b65deb18bac407895fff0"
 }

@@ -18,17 +18,20 @@
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
+#include <future>
 #include <iostream>
 #include <optional>
 #include <stdexcept>
 #include <string_view>
 #include <thread>
+#include <utility>
 
 namespace {
 namespace s = isle::startup;
 namespace g = isle::game_host;
 namespace h = isle::host;
 namespace in = isle::game_input;
+namespace ga = isle::game_audio;
 void require(bool value, const char* reason) { if (!value) throw std::runtime_error(reason); }
 void checked(h::ClockError value) { require(value == h::ClockError::none,"GTL action/lease transition rejected"); }
 void offer_ticks(h::GtlClock& clock, std::uint64_t ticks) {
@@ -53,7 +56,117 @@ void complete_read(in::Service& input, in::EventResult event, const SoftwareCont
     const auto completed = input.complete_read(event.read,controller.sample());
     require(completed.error == in::Error::none,"actual owned software acquisition completion rejected");
 }
-enum class Scenario { roundtrip, full_title, reset_live_offsets, name_oak };
+enum class Scenario { roundtrip, full_title, reset_live_offsets, name_oak, audio_owner };
+
+struct AudioObservation {
+    ga::Output endpoint;
+    std::uint64_t frames = 0, non_silent_frames = 0;
+    bool silent_bootstrap = false;
+
+    ga::Output output() noexcept {
+        return {this,+[](void* raw) noexcept {
+            const auto& e = static_cast<AudioObservation*>(raw)->endpoint;
+            return e.inspect(e.owner);
+        },+[](void* raw,std::span<const std::int16_t> samples) noexcept {
+            auto& self = *static_cast<AudioObservation*>(raw);
+            const auto accepted = self.endpoint.submit(self.endpoint.owner,samples);
+            if (!accepted.accepted_frames || accepted.accepted_frames > samples.size()/2) return accepted;
+            std::uint32_t non_silent = 0;
+            for (std::size_t n = 0; n < accepted.accepted_frames; ++n)
+                if (samples[2*n] != 0 || samples[2*n+1] != 0) ++non_silent;
+            if (!self.frames) self.silent_bootstrap = accepted.accepted_frames == 640 && !non_silent;
+            self.frames += accepted.accepted_frames;
+            self.non_silent_frames += non_silent;
+            return accepted;
+        },+[](void* raw) noexcept {
+            const auto& e = static_cast<AudioObservation*>(raw)->endpoint;
+            return e.finish(e.owner);
+        },+[](void* raw) noexcept {
+            const auto& e = static_cast<AudioObservation*>(raw)->endpoint;
+            return e.poll(e.owner);
+        }};
+    }
+};
+
+int run_audio_owner(const isle::rom::Snapshot& snapshot, const std::filesystem::path& host_data) {
+    g::Config configuration;
+    configuration.data_directory = host_data;
+    configuration.input = g::InputMode::diagnostic_disabled;
+    auto platform = g::Host::create(snapshot,std::move(configuration));
+    require(bool(platform),platform.message.data());
+    auto& host = *platform.host;
+    const auto& info = host.audio_info();
+    require(info.physical_device == 0 && std::string_view(info.driver.data()) == "dummy",
+            "actual SDL dummy endpoint did not use the default device policy");
+    const auto endpoint = host.audio_output();
+    using Time = std::chrono::steady_clock;
+    std::packaged_task<std::pair<std::uint64_t,std::uint64_t>()> exercise([&snapshot,endpoint] {
+        AudioObservation observed{endpoint};
+        auto made = ga::Driver::create(snapshot,observed.output());
+        require(bool(made),made.message.data());
+        auto& audio = *made.driver;
+        auto& session = audio.session();
+        require(audio.pump(),audio.message());
+        require(session.source_frame_epoch() == 1 && session.service().has_lease() &&
+                !session.accepted_frames() && !session.native_ai_frames() && !observed.frames,
+                "real bootstrap did not retain its completed PCM before starting the clock");
+
+        // The Title main cue is the only sound requested. Observe its actual
+        // accepted PCM, without intercepting or replacing the SDL consumer.
+        require(session.bgm_volume(0,0x7f00) == isle::audio::Error::none &&
+                session.play_song(0,0x19) == isle::audio::Error::none,"Title song19 request failed");
+        h::RetraceClock retraces(2250000,37609);
+        const auto epoch = Time::now();
+        const auto deadline = epoch+std::chrono::seconds(20);
+        std::uint64_t ordinal = 0;
+        const auto service = [&] {
+            const auto now = Time::now();
+            require(now < deadline,"actual GAME audio production/drain deadline expired");
+            const auto ns = static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(now-epoch).count());
+            const auto ticks = retraces.advance(ns);
+            for (std::uint64_t n = 0; n < ticks; ++n) require(audio.notify_retrace(++ordinal,ns),audio.message());
+            require(audio.pump(),audio.message());
+            if (ordinal < 2) require(!session.native_ai_frames() && !observed.frames,
+                                     "bootstrap invented PCM or AI credit before two real notifications");
+            if (!ticks) std::this_thread::sleep_until(std::min(deadline,now+std::chrono::milliseconds(1)));
+        };
+        while (observed.non_silent_frames < 1024) service();
+        require(observed.silent_bootstrap,"first accepted PCM was not the silent 640-frame bootstrap");
+        const auto cue_frames = observed.non_silent_frames;
+        require(audio.stop(),audio.message());
+        for (;;) {
+            service();
+            const auto drain = audio.poll_drain();
+            require(drain != ga::Drain::failed,audio.message());
+            if (drain == ga::Drain::drained) break;
+        }
+        const auto accepted_frames = session.accepted_frames();
+        require(accepted_frames == observed.frames && accepted_frames >= 640+cue_frames &&
+                session.state() == ga::Session::State::drained && !session.service().has_lease(),
+                "actual GAME audio retirement lost PCM ownership or failed to drain");
+        require(audio.retire(),audio.message());
+        return std::pair{accepted_frames,cue_frames};
+    });
+    auto result = exercise.get_future();
+    const auto deadline = Time::now()+std::chrono::seconds(30);
+    std::thread game(std::move(exercise));
+    // Main deliberately does not service any events, input, graphics or calls
+    // until the actual SDL/RSP producer has stopped, drained and retired.
+    if (result.wait_until(deadline) != std::future_status::ready) {
+        std::cerr << "private audio-owner: GAME did not retire without main platform service\n";
+        std::_Exit(EXIT_FAILURE); // Cannot close the borrowed endpoint or wait forever on a stalled owner.
+    }
+    game.join();
+    const auto [accepted_frames,cue_frames] = result.get();
+    const auto closed = host.shutdown();
+    require(!closed.failed && closed.owners_released && closed.audio == isle::audio::SdlAudioOutput::CloseDisposition::stream_drained,
+            "main did not release the actual endpoint after GAME drain and join");
+    std::cout << "native_audio_owner=passed cue=title_song_0x19 accepted_dummy_PCM_frames=" << accepted_frames
+              << " cue_non_silent_frames_before_stop=" << cue_frames
+              << " cold_bootstrap=actual_gated main_platform_calls_during_game=0"
+                 " GAME_RSP=retired SDL=stream_drained_after_join physical_playback=not_claimed\n";
+    return 0;
+}
 void create_existing_profile(const std::filesystem::path& path) {
     auto fixture = isle::save::GameSession::open(path,0x13579u);
     require(bool(fixture),"real preexisting profile fixture could not acquire its Store");
@@ -89,6 +202,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
             std::filesystem::create_directory(root/"proof"),"private scenario child roots must be newly owned, never reused");
     if (reset_offsets) create_existing_profile(root/"profile");
     const auto snapshot = isle::rom::read_snapshot(rom);
+    if (scenario == Scenario::audio_owner) return run_audio_owner(snapshot,root/"host");
     auto catalog = isle::menu::hydrate(snapshot);
     require(bool(catalog),"complete private startup resource hydration rejected");
     // A valid owned persisted config deliberately disagrees with this adapter's
@@ -596,13 +710,15 @@ int wmain(int argc,wchar_t** argv) {
 int main(int argc,char** argv) {
 #endif
     try {
-        require(argc == 4,"expected PRIVATE_ROM NEW_EXISTING_OWNED_ROOT MODE(roundtrip|full-title|reset-live-offsets|name-oak)");
+        require(argc == 4,"expected PRIVATE_ROM NEW_EXISTING_OWNED_ROOT MODE(roundtrip|full-title|reset-live-offsets|name-oak|audio-owner)");
         const auto mode = std::filesystem::path(argv[3]).u8string();
-        require(mode == u8"roundtrip" || mode == u8"full-title" || mode == u8"reset-live-offsets" || mode == u8"name-oak",
+        require(mode == u8"roundtrip" || mode == u8"full-title" || mode == u8"reset-live-offsets" || mode == u8"name-oak" ||
+                mode == u8"audio-owner",
                 "unknown source startup scenario");
         const auto scenario = mode == u8"full-title"?Scenario::full_title:
                               mode == u8"reset-live-offsets"?Scenario::reset_live_offsets:
-                              mode == u8"name-oak"?Scenario::name_oak:Scenario::roundtrip;
+                              mode == u8"name-oak"?Scenario::name_oak:
+                              mode == u8"audio-owner"?Scenario::audio_owner:Scenario::roundtrip;
         const std::filesystem::path root(argv[2]);
         const auto status = run(std::filesystem::path(argv[1]),root,scenario);
         if (scenario == Scenario::reset_live_offsets) check_existing_profile(root/"profile");

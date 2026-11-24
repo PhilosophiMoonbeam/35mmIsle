@@ -18,6 +18,8 @@ The current [Runtime preview 9](https://github.com/PhilosophiMoonbeam/35mmIsle/r
 
 The default build provides standalone native tools without LUS or game/reference checkouts. The native application is opt-in and requires a user-supplied supported ROM and additional private build inputs. See [BUILDING](docs/BUILDING.md) for prerequisites and build options, then [RUNNING](docs/RUNNING.md) for application setup and use.
 
+The current source build adds [fullscreen and window controls](docs/RUNNING.md#window-and-fullscreen-controls) and a cold-audio timing fix; the preview 9 Runtime archives are unchanged.
+
 The project is in development. [STATUS](docs/STATUS.md) distinguishes current candidate-specific evidence from historical results and open qualification gates. Those results do not establish a complete current-build pixel-only campaign, Windows 11 gameplay, physical-device qualification or final full-release acceptance. Beads remains the live authority for work tracking; the documents below provide design, contracts and evidence rather than a live task ledger.
 
 ## Documentation

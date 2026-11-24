@@ -1577,6 +1577,7 @@ if(TARGET libultraship AND TARGET isle-audio-output AND TARGET isle-rsp AND TARG
         "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_FULL_DATADIR}/35mmisle")
     target_compile_definitions(isle-game-host PRIVATE F3DEX_GBI_2
         CVAR_ENABLE_MULTI_VIEWPORTS="${CVAR_ENABLE_MULTI_VIEWPORTS}"
+        CVAR_SDL_WINDOWED_FULLSCREEN="${CVAR_SDL_WINDOWED_FULLSCREEN}"
         ISLE_HOST_RENDERER_RESOURCES="${ISLE_HOST_RENDERER_RESOURCES}"
         ISLE_HOST_INSTALLED_RESOURCES="${ISLE_HOST_INSTALLED_RESOURCES}")
     target_link_libraries(isle-game-host PUBLIC isle-game-audio isle-game-input isle-audio-output isle-host-clock

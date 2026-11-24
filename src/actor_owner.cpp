@@ -1305,7 +1305,7 @@ bool native_services_complete(const IsleVolcanoActorServices* table) noexcept {
         table->sound_stop_all &&
         table->bgm_volume &&
         table->bgm_stop &&
-        table->bgm_play &&
+        table->background_music &&
         table->environment_sound &&
         table->remove_items &&
         table->reset_camera &&

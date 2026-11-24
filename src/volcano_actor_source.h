@@ -70,7 +70,7 @@ typedef struct IsleVolcanoActorServices {
     IsleGameResult (*sound_stop_all)(IsleVolcanoActorSource*);
     IsleGameResult (*bgm_volume)(IsleVolcanoActorSource*, int32_t, int32_t);
     IsleGameResult (*bgm_stop)(IsleVolcanoActorSource*);
-    IsleGameResult (*bgm_play)(IsleVolcanoActorSource*, int32_t);
+    IsleGameResult (*background_music)(IsleVolcanoActorSource*, int32_t);
     IsleGameResult (*environment_sound)(IsleVolcanoActorSource*, IsleGameObject*, uint8_t, int32_t);
     IsleGameResult (*remove_items)(IsleVolcanoActorSource*);
     IsleGameResult (*reset_camera)(IsleVolcanoActorSource*);
@@ -171,7 +171,7 @@ void isle_volcano_actor_sound_volume(IsleVolcanoActorSource* s, uint32_t handle,
 void isle_volcano_actor_sound_stop_all(IsleVolcanoActorSource* s);
 void isle_volcano_actor_bgm_volume(IsleVolcanoActorSource* s, int32_t player, int32_t volume);
 void isle_volcano_actor_bgm_stop(IsleVolcanoActorSource* s);
-void isle_volcano_actor_bgm_play(IsleVolcanoActorSource* s, int32_t song);
+void isle_volcano_actor_background_music(IsleVolcanoActorSource* s, int32_t song);
 void isle_volcano_actor_environment_sound(IsleVolcanoActorSource* s, IsleGameObject* object, uint8_t category, int32_t sound);
 void isle_volcano_actor_remove_items(IsleVolcanoActorSource* s);
 void isle_volcano_actor_reset_camera(IsleVolcanoActorSource* s);

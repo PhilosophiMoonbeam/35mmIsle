@@ -8,7 +8,6 @@
 #include <windows.h>
 #endif
 #include "game_host.hpp"
-#include "35mmisle/continuation.h"
 
 #include <SDL3/SDL.h>
 #include <imgui.h>
@@ -78,6 +77,7 @@ public:
         mWindow.reset(); mResourceManager.reset(); mConsoleVariables.reset();
     }
 protected:
+    float GetGameAspectRatio() const override { return 4.f / 3.f; }
     void ImGuiWMInit() override {
         Fast::Fast3dGui::ImGuiWMInit();
         platform_ = ImGui::GetIO().BackendPlatformUserData != nullptr;
@@ -188,63 +188,46 @@ struct Host::Impl {
         default: return NativeOutput::State::failed;
         }
     }
-    struct OutputInspection {
-        Impl& host;
-        NativeOutput::Info result{};
-    };
-    static void inspect_on_owner(void* payload) noexcept {
-        auto& request = *static_cast<OutputInspection*>(payload);
-        if (!SDL_IsMainThread()) {
-            request.host.fail(Error::audio,"Audio inspection did not reach the actual SDL owner");
-            return;
-        }
-        const auto state = request.host.output.state();
-        if (state == Output::State::failed) request.host.audio_failure("Audio endpoint failed");
-        request.result = {output_state(state),
-                         static_cast<std::uint32_t>(request.host.output.info().source.freq)};
-    }
     static NativeOutput::Info inspect_output(void* owner) noexcept {
-        auto& self = *static_cast<Impl*>(owner);
-        OutputInspection request{self,{}};
-        if (SDL_IsMainThread()) inspect_on_owner(&request);
-        else if (isle_continuation_on_owner(inspect_on_owner,&request) != ISLE_CONT_OK)
-            self.fail(Error::audio,"GAME audio endpoint inspection owner handoff failed");
-        return request.result;
+        auto& endpoint = *static_cast<Output*>(owner);
+        return {output_state(endpoint.state()), static_cast<std::uint32_t>(endpoint.info().source.freq)};
     }
     static NativeOutput::Acceptance submit_output(void* owner, std::span<const std::int16_t> samples) noexcept {
-        auto& self = *static_cast<Impl*>(owner);
-        if (!SDL_IsMainThread()) {
-            self.fail(Error::audio,"Audio submission did not reach the actual SDL owner");
-            return {};
-        }
-        const auto result = self.output.try_submit(samples);
+        const auto result = static_cast<Output*>(owner)->try_submit(samples);
         if (result == Output::Submit::accepted)
             return {NativeOutput::Submit::accepted, static_cast<std::uint32_t>(samples.size() / 2)};
         if (result == Output::Submit::would_block) return {NativeOutput::Submit::would_block, 0};
-        self.audio_failure("SDL PCM submission failed");
         return {};
     }
     static bool finish_output(void* owner) noexcept {
-        auto& self = *static_cast<Impl*>(owner);
-        if (!SDL_IsMainThread())
-            return self.fail(Error::audio,"Audio finish did not reach the actual SDL owner");
-        return self.output.finish_input() || self.audio_failure("SDL final audio flush failed");
+        return static_cast<Output*>(owner)->finish_input();
     }
     static NativeOutput::State poll_output(void* owner) noexcept {
-        auto& self = *static_cast<Impl*>(owner);
-        if (!SDL_IsMainThread()) {
-            self.fail(Error::audio,"Audio drain did not reach the actual SDL owner");
-            return NativeOutput::State::failed;
-        }
-        const auto result = self.output.poll_drain();
-        if (result == Output::Drain::error) self.audio_failure("SDL audio stream drain failed");
-        return output_state(self.output.state());
+        auto& endpoint = *static_cast<Output*>(owner);
+        if (endpoint.poll_drain() == Output::Drain::error) return NativeOutput::State::failed;
+        return output_state(endpoint.state());
     }
     void load_configuration() {
         config = std::make_shared<Ship::Config>(lus_path(configuration_path));
     }
+    bool is_fullscreen() const noexcept {
+        return (SDL_GetWindowFlags(native_window) & SDL_WINDOW_FULLSCREEN) != 0;
+    }
     void save_configuration() {
-        window->SaveWindowToConfig();
+        const bool fullscreen = is_fullscreen();
+        config->SetBool("Window.Fullscreen.Enabled", fullscreen);
+        if (!fullscreen) {
+            int w, h;
+            if (SDL_GetWindowSize(native_window, &w, &h)) {
+                config->SetInt("Window.Width", w);
+                config->SetInt("Window.Height", h);
+            }
+            int x, y;
+            if (SDL_GetWindowPosition(native_window, &x, &y)) {
+                config->SetInt("Window.PositionX", x);
+                config->SetInt("Window.PositionY", y);
+            }
+        }
         variables->Save();
         config->Save();
     }
@@ -282,6 +265,10 @@ struct Host::Impl {
         context = Ship::Context::CreateInstance("35mmIsle", "35mmIsle");
         context->Init();
         load_configuration();
+        const bool startup_fullscreen = options.startup_fullscreen.value_or(
+            config->GetBool("Window.Fullscreen.Enabled", false));
+        // Always acquire the saved windowed rectangle first so SDL can restore it.
+        config->SetBool("Window.Fullscreen.Enabled", false);
         context->GetChildren().Add(config);
         variables = std::make_shared<Ship::ConsoleVariable>(config);
         context->GetChildren().Add(variables);
@@ -289,6 +276,7 @@ struct Host::Impl {
         if (!config->Contains("Window.Width")) config->SetInt("Window.Width", 640);
         if (!config->Contains("Window.Height")) config->SetInt("Window.Height", 480);
         variables->SetInteger(CVAR_ENABLE_MULTI_VIEWPORTS, 0);
+        variables->SetInteger(CVAR_SDL_WINDOWED_FULLSCREEN, 1);
         pool = std::make_shared<Ship::ThreadPool>(1);
         context->GetChildren().Add(pool);
         resources = std::make_shared<Ship::ResourceManager>(pool);
@@ -318,6 +306,17 @@ struct Host::Impl {
                 "LUS did not establish its real SDL3/OpenGL window and renderer");
         native_window = SDL_GL_GetCurrentWindow();
         require(native_window != nullptr, SDL_GetError());
+        if (startup_fullscreen != is_fullscreen()) {
+            try { window->SetFullscreen(startup_fullscreen); }
+            catch (const std::runtime_error& e) {
+                std::fprintf(stderr, "Startup window mode transition failed: %s\n", e.what());
+            }
+        }
+        const bool actual_fullscreen = is_fullscreen();
+        if (actual_fullscreen != startup_fullscreen)
+            std::fprintf(stderr, "Requested startup window mode unavailable; continuing %s.\n",
+                         actual_fullscreen ? "fullscreen" : "windowed");
+        config->SetBool("Window.Fullscreen.Enabled", actual_fullscreen);
         native_window_id = SDL_GetWindowID(native_window);
         require(native_window_id != 0, SDL_GetError());
         require(SDL_AddEventWatch(watch_event,this), SDL_GetError());
@@ -326,7 +325,8 @@ struct Host::Impl {
         require(finish_gpu != nullptr, "OpenGL completion barrier is unavailable");
         interpreter->SetNativeDimensions(float(width), float(height));
         config_ready = true;
-        if (!output.open({static_cast<int>(game_audio::source_rate), options.max_queued_audio_frames, options.physical_audio_device})) {
+        if (!output.open({static_cast<int>(game_audio::source_rate), options.max_queued_audio_frames,
+                          options.physical_audio_device, true})) {
             audio_failure("SDL audio endpoint opening failed");
             throw std::runtime_error(message.data());
         }
@@ -468,7 +468,7 @@ Error Host::error() const noexcept { return impl_->error; }
 const char* Host::message() const noexcept { return impl_->message.data(); }
 const std::filesystem::path& Host::data_directory() const noexcept { return impl_->options.data_directory; }
 game_audio::Output Host::audio_output() noexcept {
-    return {impl_.get(), Impl::inspect_output, Impl::submit_output, Impl::finish_output, Impl::poll_output};
+    return {&impl_->output, Impl::inspect_output, Impl::submit_output, Impl::finish_output, Impl::poll_output};
 }
 const Output::Info& Host::audio_info() const noexcept { return impl_->output.info(); }
 bool Host::pump_events() noexcept {

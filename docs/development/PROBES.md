@@ -83,6 +83,53 @@ The standalone CLI intentionally selects one sound. Partial ADPCM loops and expl
 
 The sink retains completed PCM on `WouldBlock`, copies each accepted block once through SDL, checks actual opening/removal/queue failures, and distinguishes final **stream** drain from DAC/hearing. It is owned directly by the host session, not falsely registered as LUS's legacy void-playback backend. Combined intro/audio preparation shares one immutable admitted ROM snapshot, releases it before presentation and retains typed resources through their consumer fences. Native producer versus original SDK producer matched the complete private reference schedule; exact scope, hashes and exercised transport/visual limits are in ADMISSION. Original multi-voice/BGM/effects/AI integration, hardware sound, full boot and Windows 11 qualification remain open.
 
+### Private GAME audio catalog, title and Volcano
+
+Use a full private native runtime build with the host, audio, RSP, canonical
+RDP and GAME engine options enabled (`ISLE_BUILD_HOST_PROBE`,
+`ISLE_BUILD_AUDIO_PROBE`, `ISLE_BUILD_RSP_PROBE`, `ISLE_BUILD_RDP_PROBE`,
+`ISLE_BUILD_GAME_ENGINE`). Set `BUILD` to that build directory and `ROM` to the
+supported private ROM. Build the opt-in targets explicitly:
+
+```sh
+cmake --build "$BUILD" --target game-audio-rsp-smoke \
+  35mmisle-startup-runtime-rom-smoke 35mmisle-application-runtime-rom-smoke
+"$BUILD/game-audio-rsp-smoke" "$ROM" --all-songs
+```
+
+The catalog probe needs no display or playback device. The two runtime
+probes require an actual X11 display (`DISPLAY`; Xvfb is sufficient), SDL3
+with X11/EGL support, a working desktop OpenGL/EGL driver, the build's
+renderer resources and working canonical Vulkan RDP. Use the coherent
+dependency library environment in [BUILDING](../BUILDING.md#opt-in-real-libultraship-host-probe-nonplayable).
+For the Linux software-rendering path, force EGL on X11 and use Mesa
+software OpenGL. Set `SCRATCH_PARENT` to an absolute, privately writable,
+disk-backed directory. Each probe gets a fresh empty profile root.
+
+```sh
+(
+  set -eu
+  scratch=
+  trap '[ -z "$scratch" ] || rm -rf -- "$scratch"' EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+  scratch=$(mktemp -d "$SCRATCH_PARENT/isle-audio-checks.XXXXXXXX")
+  mkdir "$scratch/audio-owner" "$scratch/volcano-music"
+  export SDL_VIDEODRIVER=x11 SDL_VIDEO_FORCE_EGL=1 LIBGL_ALWAYS_SOFTWARE=1
+  export SDL_AUDIO_DRIVER=dummy SDL_AUDIODRIVER=dummy
+  "$BUILD/35mmisle-startup-runtime-rom-smoke" "$ROM" "$scratch/audio-owner" audio-owner
+  "$BUILD/35mmisle-application-runtime-rom-smoke" "$ROM" "$scratch/volcano-music" native2-music
+)
+```
+
+`audio-owner` exercises the actual title cue and checked SDL dummy output
+without audio service on main. `native2-music` stops after the focused
+Volcano registration/restoration exercise and retires the actual owners;
+it does not complete the course, post-course or Save. See
+[current source-build evidence](admission/GAME_OWNER.md#current-source-build-audio-and-desktop-checks)
+for measured results and sanitizer limits. These private probes are not
+installed release targets and do not test physical playback.
+
 ## Canonical RDP memory experiment
 
 The opt-in `35mmisle-rdp-probe` runs original synthetic low-level RDP packets through pinned [paraLLEl-RDP](https://github.com/Themaister/parallel-rdp/tree/1cecd042b2619bc505c12bfdc713808386f2b54d), independently of LUS presentation and game CPU execution:

@@ -184,40 +184,6 @@ struct Owner::Impl {
         changed.notify_all();
         return true;
     }
-    static game_audio::Output::Info inspect(void* owner) noexcept {
-        auto& self=*static_cast<Impl*>(owner);
-        game_audio::Output::Info result{};
-        (void)self.main_call(+[](Impl& bridge,void* raw) noexcept {
-            *static_cast<game_audio::Output::Info*>(raw)=bridge.endpoint.inspect(bridge.endpoint.owner);
-        },&result);
-        return result;
-    }
-    static game_audio::Output::Acceptance submit(void* owner,std::span<const std::int16_t> samples) noexcept {
-        auto& self=*static_cast<Impl*>(owner);
-        struct Request { std::span<const std::int16_t> samples;game_audio::Output::Acceptance result{}; } request{samples,{}};
-        (void)self.main_call(+[](Impl& bridge,void* raw) noexcept {
-            auto& value=*static_cast<Request*>(raw);
-            value.result=bridge.endpoint.submit(bridge.endpoint.owner,value.samples);
-        },&request);
-        return request.result;
-    }
-    static bool finish_output(void* owner) noexcept {
-        auto& self=*static_cast<Impl*>(owner);
-        bool result=false;
-        (void)self.main_call(+[](Impl& bridge,void* raw) noexcept {
-            *static_cast<bool*>(raw)=bridge.endpoint.finish(bridge.endpoint.owner);
-        },&result);
-        return result;
-    }
-    static game_audio::Output::State poll_output(void* owner) noexcept {
-        auto& self=*static_cast<Impl*>(owner);
-        auto result=game_audio::Output::State::failed;
-        (void)self.main_call(+[](Impl& bridge,void* raw) noexcept {
-            *static_cast<game_audio::Output::State*>(raw)=bridge.endpoint.poll(bridge.endpoint.owner);
-        },&result);
-        return result;
-    }
-    game_audio::Output audio_output() noexcept { return {this,inspect,submit,finish_output,poll_output}; }
     static bool events(void* owner) noexcept {
         auto& self=*static_cast<Impl*>(owner);
         std::lock_guard lock(self.mutex);
@@ -360,9 +326,16 @@ struct Owner::Impl {
         EpochResult result{};
         std::optional<game_run_report::EpochRetirement> closure;
         if (recorder) { closure.emplace();closure->application_epoch=epoch; }
-        auto audio=game_audio::Driver::create(snapshot,audio_output());
-        if (!audio) {
-            retain(result.message,audio.message.data());cancel_input();
+        auto audio=game_audio::Driver::create(snapshot,endpoint);
+        // Execute the real silent bootstrap before Progress starts its wall
+        // clock. Session retains its PCM until the genuine retraces arrive.
+        if (!audio||!audio.driver->pump()) {
+            if (audio) {
+                retain(result.message,audio.driver->message());
+                const bool driver_retired=audio.driver->retire();
+                if (closure) closure->driver_retired=driver_retired;
+            } else retain(result.message,audio.message.data());
+            cancel_input();
             if (closure) recorder->game_epoch_retired(*closure);
             return result;
         }

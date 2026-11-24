@@ -182,7 +182,7 @@ IsleVolcanoActorServices make_volcano_actor_services() noexcept {
         .sound_stop_all = +[](Source* s) noexcept { return with(s,[](NativeHost& h) { return audio_result(h.audio().stop_sounds()); }); },
         .bgm_volume = +[](Source* s,std::int32_t player,std::int32_t volume) noexcept { return with(s,[&](NativeHost& h) { return audio_result(h.audio().bgm_volume(std::uint32_t(player),std::uint32_t(volume))); }); },
         .bgm_stop = +[](Source* s) noexcept { return with(s,[](NativeHost& h) { return audio_result(h.audio().stop_bgm()); }); },
-        .bgm_play = +[](Source* s,std::int32_t song) noexcept { return with(s,[&](NativeHost& h) { return audio_result(h.audio().play_song(0,std::uint32_t(song))); }); },
+        .background_music = +[](Source* s,std::int32_t song) noexcept { return with(s,[&](NativeHost& h) { return isle_player_root_invoke_set_background_music(&h.root()->source(),song); }); },
         .environment_sound = +[](Source* s,IsleGameObject* object,std::uint8_t category,std::int32_t id) noexcept { return with(s,[&](NativeHost& h) { IsleActorSource* a = nullptr; auto r = actor_source(h,object,&a); return r == ISLE_GAME_OK ? isle_actor_owner_environment_sound(a,category,id) : r; }); },
         .remove_items = +[](Source* s) noexcept { return with(s,[](NativeHost& h) { if (!h.items_owner()) return ISLE_GAME_INVALID_STATE; return h.items_owner()->remove_flying() ? ISLE_GAME_OK : ISLE_GAME_EXECUTION_FAILURE; }); },
         .reset_camera = +[](Source* s) noexcept { return with(s,[](NativeHost& h) { return isle_player_root_invoke_reset_main_camera_settings(&h.root()->source()); }); },

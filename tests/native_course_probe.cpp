@@ -18,6 +18,7 @@
 #include "application_photos.hpp"
 #include "application_photos_source.h"
 #include "game_state.hpp"
+#include "item_owner.hpp"
 #include "tunnel_scene.hpp"
 #include "volcano_scene.hpp"
 #include "river_scene.hpp"
@@ -356,6 +357,9 @@ struct Probe::Impl {
     IsleGameVec3 previous_shield{};
     std::uint64_t previous_shield_update=0;
     bool have_shield=false;
+    enum class VolcanoMusic { before_movement, armed, registered, restored };
+    VolcanoMusic volcano_music=VolcanoMusic::before_movement;
+    std::optional<std::uint64_t> volcano_flute_stamp;
     bool entered=false,have_position=false,intro_seen=false,intro_done=false,travel_seen=false;
     bool ending_seen=false,ending_wait=false,ending_terminal=false,retirement=false,post=false,surface=false;
     bool tutorial_followup=false,tutorial_clear=false,tutorial_stick=false,unshielded_photo=false;
@@ -1475,6 +1479,52 @@ struct Probe::Impl {
         tutorial_followup|=message;tutorial_clear|=tutorial_followup && !message;
         tutorial_stick|=tutorial_clear && (std::abs(player.input.stick_x)>=6 || std::abs(player.input.stick_y)>=6);
     }
+    void observe_volcano_music(const volcano::Lifecycle& owner,const IslePlayerSource& player) {
+        if(volcano_music==VolcanoMusic::restored)return;
+        constexpr int song=6;
+        const auto stage=owner.actors_source().volcano_SoundState1;
+        const auto& audio=owner.audio();
+        const bool main_playing=audio.bgm_playing(0);
+        if(stage<2)
+            require(player.LevelBGMSongID==-1 && !main_playing,
+                "actual Volcano requested or registered background music before positive movement");
+        if(stage==0)return;
+        const auto* host=owner.native_host();
+        require(host && host->items_owner(),"actual Volcano Player flute owner unavailable");
+        const auto flute=host->items_owner()->flute();
+        const auto epoch=audio.source_frame_epoch();
+        const bool flute_stopped_this_epoch=flute.state()==-1;
+        if(stage==1) {
+            if(volcano_music==VolcanoMusic::before_movement) {
+                require(player.movement.move_time==0.0f,"actual Volcano sound trigger was not armed at zero movement");
+                volcano_music=VolcanoMusic::armed;
+                note("volcano_music_armed_without_song");
+            }
+            if(flute_stopped_this_epoch)volcano_flute_stamp=epoch;
+            return;
+        }
+        require(player.LevelBGMSongID==song && audio.has_song(song),
+            "actual Volcano positive movement did not register admitted song 6 with Player");
+        if(volcano_music!=VolcanoMusic::registered) {
+            require(volcano_music==VolcanoMusic::armed && stage==2 && player.movement.move_time>0.0f,
+                "actual Volcano first-positive movement transition was not observed");
+            volcano_music=VolcanoMusic::registered;
+            note("volcano_music_registered",song);
+        }
+        if(!main_playing) {
+            if(flute_stopped_this_epoch)volcano_flute_stamp=epoch;
+            return;
+        }
+        // Movement can register song 6 before Player's updateMusic later in
+        // the same OM update. Its flute stop stamps the current audio epoch
+        // even with no flute playing. Reject both an absent and a stale stamp:
+        // updateMusic cannot restore a song while the old stamp holds state -1.
+        require(!player.gIdleScript && flute.command()==0 && flute_stopped_this_epoch && volcano_flute_stamp!=epoch,
+            "actual Volcano main request bypassed the source Player flute-stop restoration");
+        volcano_music=VolcanoMusic::restored;
+        note("volcano_music_player_restored",song);
+        ledger.flush();
+    }
     // Read only the actual retained model placement. This never acquires a
     // semantic reference, recomputes matrices, writes pose or caches an object.
     bool target(const IsleRainbowActorSource& actors,IsleGameVec3& position,bool shield) {
@@ -2522,6 +2572,7 @@ void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpda
     const auto limit=p.course==6?rainbow_bound:travel_bound;
     if(delta>limit || p.updates>limit-delta)p.fail("actual Source course update failure bound exhausted");
     p.updates+=delta;p.last_external=actualUpdates;p.observe(s);
+    if(p.course==2 && s.player)p.observe_volcano_music(*view.volcano,*s.player);
     if(delta && p.river_photos)p.river_photos->observe(view,p.updates);
     if(delta && p.river_porygon)p.river_porygon->observe(view,p.updates);
     if(delta && p.cave_pester)p.cave_pester->observe(view,p.updates);
@@ -2555,6 +2606,8 @@ void Probe::retired(application::SceneRetirementView view) {
        !captures || !p.travel_presentations)
         p.fail("actual Source course result/reason/join receipt rejected");
     if(p.course==0 && (!p.ending_wait || !p.ending_terminal))p.fail("actual Beach ending Cart handshake not observed");
+    if(p.course==2 && p.volcano_music!=Impl::VolcanoMusic::restored)
+        p.fail("actual Volcano movement selection and Player's natural music restoration not observed");
     if(p.course==2 && (p.volcano_stage!=Impl::VolcanoStage::travel_after_egg || p.volcano_ordinary_photos<3 ||
        !p.volcano_gate_stopped || !p.volcano_throw_consumed || !p.volcano_egg_transition || !p.volcano_gate_released ||
        !p.volcano_moltres_seen || !p.volcano_moltres_photo || !p.volcano_throws))
@@ -2590,6 +2643,7 @@ void Probe::presented(std::int32_t course,std::uint64_t ordinal,std::uint64_t di
     tag={};
 }
 bool Probe::completed() const noexcept {return p_->retirement && p_->post;}
+bool Probe::volcano_music_restored() const noexcept {return p_->volcano_music==Impl::VolcanoMusic::restored;}
 bool Probe::empty_completed() const noexcept {return p_->retirement && p_->post && p_->empty_retirement && p_->photos==0 && p_->qualified==0;}
 bool Probe::captured_photo(std::int32_t slot,const IslePlayerPhotoData* photo,std::uint64_t normalizedDigest) const noexcept {
     const auto& p=*p_;

@@ -6,6 +6,7 @@ Prebuilt preview Runtime archives do not require development SDKs or build tools
 
 - [Prebuilt Runtime](#prebuilt-runtime)
 - [Native application](#native-application)
+- [Window and fullscreen controls](#window-and-fullscreen-controls)
 - [Opt-in diagnostic labels](#opt-in-diagnostic-labels)
 - [Terminal evidence](#terminal-evidence)
 - [Native Snap Station](#native-snap-station)
@@ -40,6 +41,8 @@ Replace the ROM path. Existing default application data is reused; select a
 different data root with `--data-directory` only when intended. No configuration
 or JSON editing is needed. `--diagnostics` is optional and does not automate play.
 See [controls](#native-application) and [diagnostic reporting](#opt-in-diagnostic-labels).
+The [window and fullscreen controls](#window-and-fullscreen-controls) below
+are newer than these unchanged preview 9 archives and require a current source build.
 
 The LUS frontend needs working OpenGL support; canonical game rendering needs
 a Vulkan loader and compatible device/driver. Linux also requires compatible
@@ -93,6 +96,31 @@ Earlier downloaded Linux products exercised these bindings through ordinary SDL 
 the window title; it does not connect a printer or request application exit.
 
 Current candidate-specific execution evidence is in [Runtime status](STATUS.md#runtime-status) and [ADMISSION](development/ADMISSION.md); earlier campaign, numerical, photo and menu proofs do not transfer automatically to a changed executable. Preview 9 pins `b701ece`, passes all ten native hosted jobs and preserves preview 8's original assets with a public defect notice. Its production RSP backend remains source-backed LLVM 21.1.8 and the selected MIT parallel-rsp helpers. Ordinary push/PR CI never publishes; explicit manual dispatch retains checked candidates for exact-byte inspection and smoke before separate final publication. See [BUILDING](BUILDING.md#preview8-candidate-retention). The maintainer's clean-room Snap distribution basis is recorded in [LICENSING](planning/LICENSING.md#preview8-maintainer-disposition); actual third-party notices still apply. No ROM, extracted assets, private profiles/captures or SDK is bundled. Hosted MSVC `/MT` packaging is not Windows 11 gameplay, hardware, full-campaign or fidelity qualification.
+
+### Window and fullscreen controls
+
+Launch the current source build without a mode flag to restore the last saved
+display mode. To select a mode at startup, pass either `--fullscreen` or
+`--windowed`, never both:
+
+```sh
+build/native-game/35mmisle /private/pokemonsnap.z64 --fullscreen
+build/native-game/35mmisle /private/pokemonsnap.z64 --windowed
+```
+
+Use `--windowed` to recover from an unwanted fullscreen launch. The command-line
+choice applies once per process, not again when the native host is recreated.
+Press and release **F11** to toggle between windowed mode and actual borderless
+desktop fullscreen. F11 is a host shortcut and still works with `--disable-input`;
+it is separate from **F9** Snap Station printing. In either mode the game image
+fits inside the available area at a centered 4:3 aspect ratio, leaving bars on
+the sides of a widescreen display or above and below the image in a narrow window,
+without stretching or cropping.
+
+The current mode and last logical windowed rectangle (position and size) survive
+normal close and native host recreation. Fullscreen does not replace that saved
+rectangle: returning to windowed mode restores it. Normal use and recovery do
+not require JSON edits.
 
 ### Opt-in diagnostic labels
 
@@ -153,6 +181,15 @@ the relevant text into chat. **Audio fidelity remains unqualified:** playback
 and these labels cannot prove or disprove a numerical/sample-rate defect,
 including a reported `.35` issue. There is no audible-issue detector. Keep
 observations about sound separate from the real error/status context.
+
+For missing or unexpected playback, check the system's default output device
+and mixer settings. To collect context on a subsequent run, launch with the
+existing `--diagnostics` option and close normally to capture the report and
+relevant console output. Note what you heard separately.
+SDL still follows the system-default playback device. In the current source
+build, a cold audio task no longer consumes Source retrace time; this timing
+change is newer than the unchanged preview 9 archives. The report supplies
+runtime context, not evidence of what was physically heard.
 
 ### Terminal evidence
 

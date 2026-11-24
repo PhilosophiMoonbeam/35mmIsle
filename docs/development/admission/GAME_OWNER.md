@@ -5,6 +5,7 @@ Dedicated GAME ownership, product retirement, and the recorded qualification bou
 [Admission index](../ADMISSION.md) · [Project README](../../../README.md)
 
 - [Native product dedicated GAME owner](#native-product-dedicated-game-owner)
+- [Current source-build audio and desktop checks](#current-source-build-audio-and-desktop-checks)
 - [Actual initial product exercise](#actual-initial-product-exercise)
 - [Reviewed product keyboard and active-scoring retirement](#reviewed-product-keyboard-and-active-scoring-retirement)
 - [Exact-head cross-platform CI](#exact-head-cross-platform-ci)
@@ -22,24 +23,66 @@ Dedicated GAME ownership, product retirement, and the recorded qualification bou
 
 `game_owner::Owner` constructs the actual State/Runtime/Manager, continuation,
 graphics, Input, Station, GTL, Progress and audio ownership tree on one
-persistent ordinary GAME thread. Main owns SDL/LUS, acquisition, presentation
-and PCM transport. `Host::audio()` and its mixed producer lifecycle are removed;
-all actual consumers explicitly retain a GAME audio `Driver`.
+persistent ordinary GAME thread. Main owns SDL/LUS creation and shutdown,
+video and presentation, host input acquisition, and host-side Station actions
+and feedback. GAME retains the logical Input and Station users. Main opens the
+SDL playback stream before starting GAME; GAME is its single serialized
+borrower, and returns that capability before the join completes. Main closes
+the stream only after the join. Each actual audio consumer retains a GAME
+audio `Driver`, not a mixed-lifecycle `Host::audio()` producer.
 
-The product uses existing fixed SPSC Input transfers, one retained asynchronous
-display offer/acknowledgment, and one bounded synchronous main rendezvous for
-actual endpoint operations. No mutex spans SDL work, GAME execution or join.
-A display acknowledgment ends main's pixel access; GAME performs the existing
-FrameToken/Station release. Accepted RPC stack arguments remain retained through
-their actual reply, including during stop. Nested native waits use the same
-Progress policy and returning native service, never another OM update.
+The product uses existing fixed SPSC Input transfers and one retained
+asynchronous display offer/acknowledgment. A display acknowledgment ends
+main's pixel access; GAME performs the existing FrameToken/Station release.
+Historically the product also used a bounded synchronous main rendezvous for
+every PCM endpoint operation, retaining accepted RPC arguments through reply
+even during stop. PCM inspection, submission and drain now run on GAME
+without servicing that rendezvous on main. No mutex spans SDL work, GAME
+execution or join. Nested native waits use the same Progress policy and
+returning native service, never another OM update.
 
 Reset keeps the same GAME thread, Input Service and Station. Main collects F9;
 only outer GAME code consumes reset/disconnect after Source/native leaves
 return. Input cancellation settles both transfer directions before reentry.
-Native users retire before Driver/RSP/RAM, then actual SDL stream closure and
-Host teardown. Independent ownership and audio/consumer reviews found no
-concrete P0/P1/P2 defect; these are source reviews, not runtime qualification.
+GAME executes the real silent RSP bootstrap before Progress starts its wall
+clock, then retains the PCM until genuine retraces arrive. The transport uses
+bounded startup preroll of roughly one playback-device period; it does not
+change Source VI, Session, guest AI, or control policy. Retirement stops new
+source requests, completes release and tail tasks, flushes and polls the stream
+drain, then retires the Driver before main closes SDL. Native users retire
+before Driver/RSP/RAM. Stream drain does not measure DAC timing.
+
+### Current source-build audio and desktop checks
+
+- The complete Clang ASan/UBSan CPU CTest suite passed **65/65**. The private
+  `audio-owner` component, run with corrected Mesa and leak detection enabled,
+  accepted **22,288** SDL dummy frames through drain and observed **1,405
+  non-silent frames** from the actual title cue (song `0x19`) before stop,
+  with no platform service on main while GAME ran.
+  A separate rendered ASan experiment using corrected Mesa reported
+  **112 bytes** in allocation callers mapped to `libgallium` in that same
+  process (`bd_35mmIsle-b3o`). This was not a clean rendered sanitizer run.
+- The private catalog run executed **4,742 actual RSP tasks** across all
+  **37** entries: 36 playable songs produced nonzero PCM; authored quiet
+  Cave song `0x16` stayed silent even though physical notes were scheduled.
+- The focused stock GNU `native2-music` run observed Volcano song **6**
+  register at the first actual positive movement update (**303**), Player
+  restore it at update **304**, another **640 frames**, and actual complete,
+  orderly retirement. It did not exercise an entire course, the post-course
+  path, or Save.
+- The source-built stock GNU product passed the F11, CLI fullscreen and
+  restart checks on Xvfb with Openbox. At **1280×720** fullscreen, actual pixels
+  showed **160 px** black bars on each side. The **1000×482** and **500×608**
+  restored windows showed their actual 4:3 bars. Five ordinary closes exited
+  **0**. A private **48 kHz** Pulse monitor contained nonzero samples in
+  sampled intervals before fullscreen, in fullscreen and after return to
+  windowed mode. Those intervals cannot establish dropout-free playback,
+  scene identity, physical hearing or DAC timing.
+
+See [private probe commands](../PROBES.md#private-game-audio-catalog-title-and-volcano).
+These local checks do not establish numeric or physical Original parity or
+current Windows gameplay. The source build does not replace published
+Runtime preview 9.
 
 ### Actual initial product exercise
 

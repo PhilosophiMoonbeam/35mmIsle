@@ -42,7 +42,7 @@
       "sha256": "591394a02c7e987b953166b51e50f4090d29084a780e0c36b23d1b9da93ab89a"
     },
     "src/actor_owner.cpp": {
-      "sha256": "828ebfb3579d1ca6c647dd948db3bca264d8873da0e50011cb3baf7d087b22e4"
+      "sha256": "419a1dbb45bbaf17e40967b9ce02bd15cd669384438252c7f77d7cc24c331c08"
     },
     "src/actor_owner.hpp": {
       "sha256": "ef2c93b677c8402dfb3c401d8e82b4c76cce8498813137a2497aaf587e0b9bca"

@@ -6,6 +6,7 @@
 #include "35mmisle/game_input.hpp"
 #include "35mmisle/game_save.hpp"
 #include <filesystem>
+#include <optional>
 
 namespace isle::game_host {
 inline constexpr std::uint32_t width = 320, height = 240, stride = width * 4;
@@ -19,6 +20,7 @@ struct Config {
     InputMode input = InputMode::control_deck;
     std::size_t max_queued_audio_frames = 4096;
     SDL_AudioDeviceID physical_audio_device = 0;
+    std::optional<bool> startup_fullscreen = std::nullopt; // Otherwise use the saved mode.
 };
 struct Input {
     game_input::HostFrame ports{};
@@ -45,9 +47,8 @@ public:
     Error error() const noexcept;
     const char* message() const noexcept; // First failure, retained through shutdown.
     const std::filesystem::path& data_directory() const noexcept;
-    // Borrowed actual main-owned SDL endpoint. All callbacks require main;
-    // direct main-owned continuation diagnostics can hand off inspection only.
-    // A dedicated GAME owner must rendezvous every callback with actual main.
+    // Borrowed SDL stream capability. Serialize callbacks on one service owner
+    // after main-thread open, and retire that owner before main-thread shutdown.
     game_audio::Output audio_output() noexcept;
     const audio::SdlAudioOutput::Info& audio_info() const noexcept;
     bool pump_events() noexcept;
